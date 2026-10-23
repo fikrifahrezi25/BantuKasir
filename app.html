@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BantuKasir - Aplikasi Kasir AI Langsung dari Browser</title>
+    <meta name="description" content="Aplikasi kasir berbasis web dengan AI. Hitung barang lewat foto atau ketikan, QRIS tersimpan, stok terpantau. Langsung dipakai dari browser tanpa unduh.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --orange: #D35400;
+            --orange-dark: #A04000;
+            --green: #229954;
+            --green-dark: #186A3B;
+            --dark: #1C2833;
+            --gray: #566573;
+            --gray-light: #D5D8DC;
+            --bg: #FDFEFE;
+            --shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 18px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--orange);
+            text-decoration: none;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-login {
+            padding: 10px 20px;
+            border: 2px solid var(--orange);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--orange);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login:hover {
+            background: var(--orange);
+            color: white;
+        }
+
+        .btn-register {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: var(--orange);
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-register:hover {
+            background: var(--orange-dark);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 100px;
+            background: linear-gradient(to bottom, white 0%, #F8F9F9 100%);
+        }
+
+        .hero-content {
+            max-width: 680px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 24px;
+            color: var(--dark);
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--gray);
+            margin-bottom: 36px;
+            line-height: 1.65;
+        }
+
+        .cta-primary {
+            display: inline-block;
+            padding: 18px 40px;
+            background: var(--orange);
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 19px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(211, 84, 0, 0.25);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .cta-primary:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(211, 84, 0, 0.35);
+        }
+
+        .cta-note {
+            display: block;
+            margin-top: 14px;
+            font-size: 15px;
+            color: var(--gray);
+        }
+
+        /* Demo Calc */
+        .demo-calc {
+            margin-top: 60px;
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            max-width: 480px;
+        }
+
+        .demo-calc h4 {
+            font-size: 16px;
+            color: var(--gray);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .calc-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-light);
+            font-size: 16px;
+        }
+
+        .calc-item:last-child {
+            border: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--dark);
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--orange);
+        }
+
+        /* Benefits */
+        .benefits {
+            padding: 100px 0;
+        }
+
+        .section-header {
+            max-width: 640px;
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .section-header p {
+            font-size: 19px;
+            color: var(--gray);
+        }
+
+        .benefit {
+            margin-bottom: 80px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+
+        .benefit:last-child {
+            margin-bottom: 0;
+        }
+
+        .benefit-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: var(--orange);
+            color: white;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .benefit h3 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+
+        .benefit p {
+            font-size: 18px;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 100px 0;
+            background: #F8F9F9;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-top: 60px;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 32px;
+            border-radius: 10px;
+            border-left: 5px solid var(--green);
+        }
+
+        .testimonial-label {
+            display: inline-block;
+            background: #FFF9E6;
+            color: #8B6914;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-text {
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--dark);
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .author-initial {
+            width: 52px;
+            height: 52px;
+            background: var(--orange);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .author-info strong {
+            display: block;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .author-info span {
+            font-size: 15px;
+            color: var(--gray);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 40px;
+            margin-bottom: 24px;
+            color: var(--dark);
+        }
+
+        .cta-section p {
+            font-size: 19px;
+            color: var(--gray);
+            margin-bottom: 40px;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 30px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-brand h3 {
+            font-size: 26px;
+            margin-bottom: 14px;
+            color: var(--orange);
+        }
+
+        .footer-brand p {
+            color: var(--gray-light);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .footer-section h4 {
+            font-size: 17px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .footer-section p, .footer-section a {
+            color: var(--gray-light);
+            font-size: 16px;
+            line-height: 1.8;
+            text-decoration: none;
+        }
+
+        .footer-section a:hover {
+            color: var(--orange);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .social-links a {
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--orange);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 28px;
+            text-align: center;
+            color: var(--gray-light);
+            font-size: 15px;
+        }
+
+        /* Auth Modal */
+        .auth-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-overlay.active {
+            display: flex;
+        }
+
+        .auth-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 460px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .auth-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--gray);
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-close:hover {
+            color: var(--dark);
+        }
+
+        .auth-modal h2 {
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .auth-modal .subtitle {
+            font-size: 16px;
+            color: var(--gray);
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-size: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-light);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--orange);
+        }
+
+        .form-group.error input {
+            border-color: #E74C3C;
+        }
+
+        .form-error {
+            color: #E74C3C;
+            font-size: 14px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-group.error .form-error {
+            display: block;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .toggle-password:hover {
+            color: var(--dark);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .btn-submit:hover {
+            background: var(--orange-dark);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 15px;
+            color: var(--gray);
+        }
+
+        .auth-switch a {
+            color: var(--orange);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-notice {
+            background: #FFF3CD;
+            border: 1px solid #FFE69C;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .back-home:hover {
+            color: var(--orange);
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .hero h1 {
+                font-size: 56px;
+            }
+
+            .hero p {
+                font-size: 21px;
+            }
+
+            .section-header h2 {
+                font-size: 48px;
+            }
+
+            .benefit {
+                grid-template-columns: 1fr 1fr;
+                gap: 60px;
+                align-items: center;
+            }
+
+            .benefit:nth-child(even) .benefit-content {
+                order: 2;
+            }
+
+            .testimonial-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: 2fr 1fr 1fr;
+                gap: 60px;
+            }
+
+            .demo-calc {
+                max-width: 520px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 38px;
+            }
+
+            .auth-modal {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-inner">
+            <a href="#" class="logo">BantuKasir</a>
+            <div class="header-actions">
+                <a href="#masuk" class="btn-login">Masuk</a>
+                <a href="#daftar" class="btn-register">Daftar</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Kasir ramai? AI bantu hitung, Anda fokus melayani</h1>
+                <p>Foto barang atau ketik manual—AI yang menghitung totalnya. QRIS toko Anda tersimpan, tinggal ditampilkan saat pelanggan bayar. Semua dari browser, tanpa unduh aplikasi.</p>
+                
+                <a href="#daftar" class="cta-primary">Daftar Gratis</a>
+                <span class="cta-note">Langsung dipakai dari browser, tanpa unduh</span>
+
+                <div class="demo-calc">
+                    <h4>Contoh: AI hitung barang belanjaan</h4>
+                    <div class="calc-item">
+                        <span>Beras 5kg</span>
+                        <span>Rp 65.000</span>
+                    </div>
+                    <div class="calc-item">
+                        <span>Minyak goreng 2L</span>
+                        <span>Rp 34.000</span>
+                    </div>
+                    <div class="calc-item">
+                        <span>Gula pasir 1kg</span>
+                        <span>Rp 15.000</span>
+                    </div>
+                    <div class="calc-item">
+                        <span>Telur 1kg</span>
+                        <span>Rp 28.000</span>
+                    </div>
+                    <div class="calc-item">
+                        <span>Total</span>
+                        <span>Rp 142.000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits -->
+    <section class="benefits">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Kenapa pemilik usaha pakai BantuKasir</h2>
+                <p>Karena hitung manual sering salah saat ramai, dan aplikasi lain ribet diinstal. BantuKasir dibuat simpel.</p>
+            </div>
+
+            <div class="benefit fade-in">
+                <div class="benefit-content">
+                    <div class="benefit-number">1</div>
+                    <h3>Hitung barang dengan foto atau ketikan</h3>
+                    <p>Antrean ramai jam pulang kantor? Tinggal foto barang belanjaan, AI langsung menghitung totalnya. Kalau mau ketik manual, juga bisa. Tidak perlu hitung di kepala atau kalkulator lagi—fokus saja melayani pelanggan dengan cepat.</p>
+                </div>
+            </div>
+
+            <div class="benefit fade-in">
+                <div class="benefit-content">
+                    <div class="benefit-number">2</div>
+                    <h3>Foto QRIS diunggah sekali, siap ditampilkan kapan saja</h3>
+                    <p>Unggah foto QRIS toko Anda ke aplikasi, selesai. Setiap kali ada pelanggan mau bayar pakai QRIS, tinggal buka dan tampilin. Tidak perlu cari-cari kertas QRIS yang sering hilang atau kotor.</p>
+                </div>
+            </div>
+
+            <div class="benefit fade-in">
+                <div class="benefit-content">
+                    <div class="benefit-number">3</div>
+                    <h3>Stok dan sisa stok terlihat jelas</h3>
+                    <p>Pantau jumlah stok barang yang Anda jual. Aplikasi menampilkan sisa stok, jadi Anda tahu barang mana yang mau habis sebelum kehabisan saat ramai. Tidak perlu catat manual di buku atau ingat-ingat di kepala.</p>
+                </div>
+            </div>
+
+            <div class="benefit fade-in">
+                <div class="benefit-content">
+                    <div class="benefit-number">4</div>
+                    <h3>Tinggal buka di browser, mudah dipakai</h3>
+                    <p>Tidak perlu unduh atau instal aplikasi. Buka saja dari browser HP, tablet, atau laptop Anda. Ikon profil staf dan menu pengaturan ada di pojok kanan atas kalau butuh ubah sesuatu. Dibuat untuk pemilik usaha yang tidak terbiasa dengan aplikasi rumit.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2>Kata pemilik usaha yang sudah pakai</h2>
+                <p>Cerita dari pedagang seperti Anda</p>
+            </div>
+
+            <div class="testimonial-grid">
+                <div class="testimonial fade-in">
+                    <div class="testimonial-label">Contoh Testimoni</div>
+                    <div class="testimonial-text">
+                        "Jam pulang kerja itu warung saya penuh terus. Dulu sering salah hitung kalau pembeli borong banyak barang. Sekarang tinggal foto, AI yang itung, pembeli juga percaya karena lihat sendiri di layar."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-initial">S</div>
+                        <div class="author-info">
+                            <strong>Bu Siti</strong>
+                            <span>Warung Kelontong, Jakarta Timur</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial fade-in">
+                    <div class="testimonial-label">Contoh Testimoni</div>
+                    <div class="testimonial-text">
+                        "QRIS toko saya dulu nempel di dinding, sering kotor kena percikan air. Sekarang tinggal buka dari HP, pelanggan scan langsung. Praktis banget, apalagi pas hujan dan ramai."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-initial">B</div>
+                        <div class="author-info">
+                            <strong>Mas Budi</strong>
+                            <span>Kedai Kopi, Bandung</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial fade-in">
+                    <div class="testimonial-label">Contoh Testimoni</div>
+                    <div class="testimonial-text">
+                        "Fitur stoknya ngebantu banget. Dulu baru sadar minyak habis pas pembeli udah antri. Sekarang keliatan langsung stok mana yang tinggal sedikit, jadi bisa restok duluan sebelum kehabisan."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-initial">A</div>
+                        <div class="author-info">
+                            <strong>Ibu Ani</strong>
+                            <span>Toko Kelontong, Surabaya</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container fade-in">
+            <h2>Mulai pakai BantuKasir hari ini</h2>
+            <p>Daftar gratis, langsung bisa coba dari browser. Tidak perlu ribet setup, tidak perlu kartu kredit.</p>
+            <a href="#daftar" class="cta-primary">Daftar Gratis Sekarang</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>BantuKasir</h3>
+                    <p>Aplikasi kasir berbasis web dengan AI untuk usaha kecil di Indonesia. Hitung cepat, QRIS tersimpan, stok terpantau. Langsung dari browser.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Kontak</h4>
+                    <p>Email: <a href="mailto:[ISI EMAIL]">[ISI EMAIL]</a></p>
+                    <p>WhatsApp: <a href="https://wa.me/[ISI NOMOR WA]">[ISI NOMOR WA]</a></p>
+                    <p>Jam layanan: <strong>[ISI JAM LAYANAN]</strong></p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Alamat</h4>
+                    <p>[ISI ALAMAT LENGKAP]</p>
+                    <div class="social-links">
+                        <a href="[ISI TAUTAN INSTAGRAM]">Instagram</a>
+                        <a href="[ISI TAUTAN FACEBOOK]">Facebook</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 BantuKasir. Dibuat untuk pemilik usaha kecil Indonesia.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Overlays -->
+    <!-- Login Modal -->
+    <div id="auth-masuk" class="auth-overlay">
+        <div class="auth-modal">
+            <button class="auth-close" onclick="tutupAuth()">&times;</button>
+            <h2>Masuk</h2>
+            <p class="subtitle">Selamat datang kembali</p>
+
+            <form id="form-masuk" onsubmit="handleMasuk(event)">
+                <div class="form-group">
+                    <label for="masuk-email">Email atau Nomor WhatsApp</label>
+                    <input type="text" id="masuk-email" name="email" required>
+                    <div class="form-error">Masukkan email atau nomor WhatsApp yang valid</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="masuk-password">Kata Sandi</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="masuk-password" name="password" required minlength="8">
+                        <button type="button" class="toggle-password" onclick="togglePassword('masuk-password')">Lihat</button>
+                    </div>
+                    <div class="form-error">Kata sandi minimal 8 karakter</div>
+                </div>
+
+                <button type="submit" class="btn-submit">Masuk</button>
+
+                <div class="auth-notice">
+                    Backend belum terhubung. Fungsi login akan diaktifkan setelah endpoint server tersedia.
+                </div>
+            </form>
+
+            <div class="auth-switch">
+                Belum punya akun? <a href="#daftar">Daftar</a>
+            </div>
+
+            <a href="#" class="back-home">← Kembali ke beranda</a>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="auth-daftar" class="auth-overlay">
+        <div class="auth-modal">
+            <button class="auth-close" onclick="tutupAuth()">&times;</button>
+            <h2>Daftar</h2>
+            <p class="subtitle">Mulai pakai BantuKasir gratis</p>
+
+            <form id="form-daftar" onsubmit="handleDaftar(event)">
+                <div class="form-group">
+                    <label for="daftar-nama">Nama Lengkap</label>
+                    <input type="text" id="daftar-nama" name="nama" required>
+                    <div class="form-error">Nama tidak boleh kosong</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="daftar-usaha">Nama Usaha</label>
+                    <input type="text" id="daftar-usaha" name="usaha" required>
+                    <div class="form-error">Nama usaha tidak boleh kosong</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="daftar-email">Email atau Nomor WhatsApp</label>
+                    <input type="text" id="daftar-email" name="email" required>
+                    <div class="form-error">Masukkan email atau nomor WhatsApp yang valid</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="daftar-password">Kata Sandi</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="daftar-password" name="password" required minlength="8">
+                        <button type="button" class="toggle-password" onclick="togglePassword('daftar-password')">Lihat</button>
+                    </div>
+                    <div class="form-error">Kata sandi minimal 8 karakter</div>
+                </div>
+
+                <button type="submit" class="btn-submit">Daftar</button>
+
+                <div class="auth-notice">
+                    Backend belum terhubung. Fungsi pendaftaran akan diaktifkan setelah endpoint server tersedia.
+                </div>
+            </form>
+
+            <div class="auth-switch">
+                Sudah punya akun? <a href="#masuk">Masuk</a>
+            </div>
+
+            <a href="#" class="back-home">← Kembali ke beranda</a>
+        </div>
+    </div>
+
+    <script>
+        // Navigation & Modal Management
+        function bukaAuth(jenis) {
+            console.log('Membuka:', jenis); // Debug
+            const overlay = document.getElementById(`auth-${jenis}`);
+            if (overlay) {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Focus ke input pertama
+                setTimeout(() => {
+                    const firstInput = overlay.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }, 100);
+            } else {
+                console.error('Modal tidak ditemukan:', `auth-${jenis}`);
+            }
+        }
+
+        function tutupAuth() {
+            document.querySelectorAll('.auth-overlay').forEach(overlay => {
+                overlay.classList.remove('active');
+            });
+            document.body.style.overflow = '';
+            window.location.hash = '';
+        }
+
+        // Handle hash changes
+        function handleHash() {
+            const hash = window.location.hash.slice(1);
+            
+            // Tutup semua modal dulu
+            document.querySelectorAll('.auth-overlay').forEach(overlay => {
+                overlay.classList.remove('active');
+            });
+            
+            // Buka modal yang sesuai
+            if (hash === 'masuk' || hash === 'daftar') {
+                bukaAuth(hash);
+            } else {
+                // Jika hash kosong atau tidak dikenal, tutup semua
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Event listener untuk hash changes
+        window.addEventListener('hashchange', handleHash);
+        window.addEventListener('load', handleHash);
+
+        // Event listener tambahan untuk semua link auth
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tangkap semua link yang mengarah ke #masuk atau #daftar
+            document.querySelectorAll('a[href="#masuk"], a[href="#daftar"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href').slice(1);
+                    window.location.hash = hash;
+                    handleHash();
+                });
+            });
+        });
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                tutupAuth();
+            }
+        });
+
+        // Close on overlay click
+        document.querySelectorAll('.auth-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    tutupAuth();
+                }
+            });
+        });
+
+        // Password toggle
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = 'Sembunyikan';
+            } else {
+                field.type = 'password';
+                button.textContent = 'Lihat';
+            }
+        }
+
+        // Validation
+        function validateEmail(value) {
+            // Email atau nomor WA (minimal 10 digit)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^[\d\s+()-]{10,}$/;
+            return emailRegex.test(value) || phoneRegex.test(value);
+        }
+
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            const inputs = form.querySelectorAll('input[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                const group = input.closest('.form-group');
+                group.classList.remove('error');
+
+                if (!input.value.trim()) {
+                    group.classList.add('error');
+                    isValid = false;
+                } else if (input.name === 'email' && !validateEmail(input.value)) {
+                    group.classList.add('error');
+                    isValid = false;
+                } else if (input.name === 'password' && input.value.length < 8) {
+                    group.classList.add('error');
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        // Handle Login
+        function handleMasuk(event) {
+            event.preventDefault();
+            
+            if (!validateForm('form-masuk')) {
+                return;
+            }
+
+            const formData = {
+                email: document.getElementById('masuk-email').value,
+                password: document.getElementById('masuk-password').value
+            };
+
+            kirimMasuk(formData);
+        }
+
+        // [HUBUNGKAN KE ENDPOINT: ISI URL]
+        async function kirimMasuk(data) {
+            const ENDPOINT = ''; // ISI URL ENDPOINT LOGIN
+            
+            if (!ENDPOINT) {
+                console.log('Login data (backend belum terhubung):', data);
+                return;
+            }
+
+            try {
+                const response = await fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Login berhasil
+                    // JANGAN simpan password di localStorage
+                    // Simpan token atau session sesuai response backend
+                    console.log('Login berhasil:', result);
+                    // Redirect ke dashboard atau halaman aplikasi
+                    // window.location.href = '/dashboard';
+                } else {
+                    // Tampilkan error dari server
+                    alert(result.message || 'Login gagal. Silakan coba lagi.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        }
+
+        // Handle Register
+        function handleDaftar(event) {
+            event.preventDefault();
+            
+            if (!validateForm('form-daftar')) {
+                return;
+            }
+
+            const formData = {
+                nama: document.getElementById('daftar-nama').value,
+                usaha: document.getElementById('daftar-usaha').value,
+                email: document.getElementById('daftar-email').value,
+                password: document.getElementById('daftar-password').value
+            };
+
+            kirimDaftar(formData);
+        }
+
+        // [HUBUNGKAN KE ENDPOINT: ISI URL]
+        async function kirimDaftar(data) {
+            const ENDPOINT = ''; // ISI URL ENDPOINT REGISTER
+            
+            if (!ENDPOINT) {
+                console.log('Register data (backend belum terhubung):', data);
+                return;
+            }
+
+            try {
+                const response = await fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Pendaftaran berhasil
+                    console.log('Pendaftaran berhasil:', result);
+                    alert('Pendaftaran berhasil! Silakan masuk.');
+                    window.location.hash = 'masuk';
+                } else {
+                    // Tampilkan error dari server
+                    alert(result.message || 'Pendaftaran gagal. Silakan coba lagi.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        }
+
+        // Fade-in animation
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -80px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Real-time input validation feedback
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('blur', () => {
+                const group = input.closest('.form-group');
+                if (!input.value.trim() && input.hasAttribute('required')) {
+                    group.classList.add('error');
+                } else if (input.name === 'email' && input.value && !validateEmail(input.value)) {
+                    group.classList.add('error');
+                } else if (input.name === 'password' && input.value && input.value.length < 8) {
+                    group.classList.add('error');
+                } else {
+                    group.classList.remove('error');
+                }
+            });
+
+            input.addEventListener('input', () => {
+                const group = input.closest('.form-group');
+                if (group.classList.contains('error') && input.value.trim()) {
+                    if (input.name === 'email') {
+                        if (validateEmail(input.value)) {
+                            group.classList.remove('error');
+                        }
+                    } else if (input.name === 'password') {
+                        if (input.value.length >= 8) {
+                            group.classList.remove('error');
+                        }
+                    } else {
+                        group.classList.remove('error');
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
