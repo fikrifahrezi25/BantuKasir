@@ -34,6 +34,11 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .btn:disabled,.btn-submit:disabled{opacity:.5;cursor:not-allowed}
 .btn-submit{width:100%;min-height:52px;border:0;border-radius:var(--r2);font:700 17px var(--fb);cursor:pointer;transition:transform 120ms}
 .btn-submit:active{transform:scale(.98)}
+/* Tombol tema */
+.btn-tema{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--line);border-radius:var(--r2);background:var(--card);color:var(--ink);cursor:pointer;transition:all var(--t);position:relative;overflow:hidden}
+.btn-tema:hover,.btn-tema:active{border-color:var(--brand);background:var(--brand);color:var(--on-brand);transform:scale(0.95)}
+.btn-tema svg{width:20px;height:20px;transition:transform var(--t);position:relative;z-index:1}
+.btn-tema:active svg{transform:rotate(20deg) scale(0.9)}
 /* Loading */
 #loader{position:fixed;inset:0;z-index:100;background:var(--brand);color:var(--on-brand);display:grid;place-content:center;justify-items:center;gap:var(--s3);transition:opacity .3s}
 #loader b{font:800 40px var(--fh)}#loader i{display:block;width:120px;height:4px;background:rgba(255,255,255,.3);overflow:hidden;border-radius:2px}
@@ -165,6 +170,8 @@ nav.bnav{position:sticky;top:0;grid-column:1;grid-row:1/3;height:100dvh;display:
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></symbol>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></symbol>
 <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h3v3h-3zM20 14v6h-6"/></symbol>
+<symbol id="i-tema" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></symbol>
+<symbol id="i-bulan" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
 </svg>
 
 <div id="loader" aria-label="Memuat"><b>BantuKasir</b><i></i></div>
@@ -173,7 +180,7 @@ nav.bnav{position:sticky;top:0;grid-column:1;grid-row:1/3;height:100dvh;display:
 <div id="landing">
 <header class="top"><div class="header-inner">
 <a href="#" class="logo">Bantu<span>Kasir</span></a>
-<div class="header-actions"><a href="#masuk" class="btn-login">Masuk</a><a href="#daftar" class="btn-register">Daftar</a></div>
+<div class="header-actions"><a href="#masuk" class="btn-login">Masuk</a><a href="#daftar" class="btn-register">Daftar</a><button class="btn-tema" onclick="toggleTemaLanding()" aria-label="Ubah tema" title="Ubah tema"><svg class="i"><use href="#i-tema"/></svg></button></div>
 </div></header>
 <main style="padding:0;max-width:none">
 <section class="hero container">
@@ -315,7 +322,7 @@ function total(){return Object.entries(S.cart).reduce((t,[id,q])=>t+q*S.prod.fin
 const cnt=()=>Object.values(S.cart).reduce((a,b)=>a+b,0);
 /* Tema */
 const mq=matchMedia('(prefers-color-scheme: dark)');
-function tema(){document.documentElement.dataset.tema=S.tema==='auto'?(mq.matches?'gelap':'terang'):S.tema;const m=$('meta[name=theme-color]');if(m)m.content=document.documentElement.dataset.tema==='gelap'?'#16120D':'#17613F'}
+function tema(){document.documentElement.dataset.tema=S.tema==='auto'?(mq.matches?'gelap':'terang'):S.tema;const m=$('meta[name=theme-color]');if(m)m.content=document.documentElement.dataset.tema==='gelap'?'#16120D':'#17613F';updateTemaIcon()}
 mq.addEventListener('change',tema);
 /* Toast */
 let tt;function toast(msg,aksi,fn){const t=$('#toast');t.innerHTML=`<span>${esc(msg)}</span>`+(aksi?`<button>${aksi}</button>`:'');if(aksi)t.lastChild.onclick=()=>{fn();t.classList.remove('on')};t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),aksi?5000:2600)}
@@ -413,7 +420,10 @@ addEventListener('offline',net);addEventListener('online',()=>{const n=$('#net')
 /* Masuk ke aplikasi */
 function enterApp(demo){$('#landing').hidden=true;$('#app').hidden=false;tutupAuth();$('#h-usaha').textContent=S.usaha;$('#h-tgl').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});net();S.load=true;go('home',true);setTimeout(()=>{S.load=false;if(S.view==='home')render()},500)}
 load();tema();
-addEventListener('load',()=>setTimeout(()=>{const l=$('#loader');l.style.opacity=0;setTimeout(()=>l.remove(),300)},900));
+/* Toggle tema dari landing page */
+function toggleTemaLanding(){const urut=['auto','terang','gelap'];const idx=urut.indexOf(S.tema);S.tema=urut[(idx+1)%3];tema();save();updateTemaIcon();const label={'auto':'Otomatis (ikuti HP)','terang':'Mode Terang','gelap':'Mode Gelap'};toast(`✓ ${label[S.tema]}`)}
+function updateTemaIcon(){const btn=$('.btn-tema');if(!btn)return;const aktif=document.documentElement.dataset.tema==='gelap';const icon=btn.querySelector('svg use');if(icon){icon.style.transition='opacity 200ms';icon.style.opacity='0';setTimeout(()=>{icon.setAttribute('href',aktif?'#i-bulan':'#i-tema');icon.style.opacity='1'},100)}else{btn.innerHTML=aktif?'<svg class="i"><use href="#i-bulan"/></svg>':'<svg class="i"><use href="#i-tema"/></svg>'}btn.title=aktif?'Mode Gelap aktif (klik untuk ubah)':'Mode Terang aktif (klik untuk ubah)';btn.setAttribute('aria-label',aktif?'Mode Gelap':'Mode Terang')}
+addEventListener('load',()=>{updateTemaIcon();setTimeout(()=>{const l=$('#loader');l.style.opacity=0;setTimeout(()=>l.remove(),300)},900)});
 </script>
 </body>
 </html>
