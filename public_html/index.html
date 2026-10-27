@@ -182,6 +182,10 @@ nav.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-tem
 .quick{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s2) 0}.kemb{padding:12px;border-radius:var(--r2);background:var(--ok-bg);font-weight:700;margin:var(--s2) 0 var(--s3)}
 .qris{display:grid;place-items:center;gap:var(--s2);padding:var(--s3);border:2px dashed var(--line);border-radius:var(--r2);text-align:center;color:var(--muted);margin:var(--s3) 0}
 .stok{font-size:13px;font-weight:700;padding:2px 8px;border-radius:var(--r1);background:var(--ok-bg);color:var(--brand);white-space:nowrap}.stok.low{background:var(--bad-bg);color:var(--bad)}
+/* ===== BADGE BEST SELLER ===== */
+.bestseller-badge{position:absolute;top:6px;left:6px;min-width:32px;height:32px;border-radius:16px;background:linear-gradient(135deg,#F2B134 0%,#F59E0B 100%);color:#231A12;font:700 11px/32px var(--fb);text-align:center;padding:0 8px;z-index:2;box-shadow:0 2px 4px rgba(242,177,52,0.4),var(--sh1);display:flex;align-items:center;justify-content:center;gap:2px;white-space:nowrap}
+.bestseller-badge svg{width:16px;height:16px;fill:currentColor;flex-shrink:0}
+.prod.bestseller{border-color:var(--accent);box-shadow:0 2px 8px rgba(242,177,52,0.15)}
 .eqn{display:grid;gap:4px;padding:var(--s3) 0;border-bottom:2px solid var(--ink)}.eqn div{display:flex;justify-content:space-between;gap:var(--s3)}.eqn .tot{font:800 clamp(22px,6vw,28px) var(--fh);border-top:2px solid var(--ink);padding-top:var(--s2);margin-top:var(--s2)}
 .chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:var(--s2);border-bottom:1px solid var(--ink)}.chart i{flex:1;background:var(--brand);border-radius:2px 2px 0 0;min-height:2px;transition:height 300ms ease-out}.chart i.n{background:var(--bad)}.chart i.t{outline:2px solid var(--accent)}
 .axis{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
@@ -244,6 +248,8 @@ nav.bnav{position:sticky;top:0;grid-column:1;grid-row:1/3;height:100dvh;display:
 <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
 <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24"><path fill="currentColor" d="M12 23c4.97 0 9-3.582 9-8 0-3.678-2.293-6.5-5-8 1.293 2.707.395 5.707-2 7-1.996-6.5-7-8-9-12 0 6.5-3 10 0 14 .5.665 1.5 1 2.5 1l.5-.001C8 18.5 8 20 8 20c0 1.105 1.343 2 3 2h1zm-1-5c0 .551-.448 1-1 1-.551 0-1-.449-1-1s.449-1 1-1c.552 0 1 .449 1 1z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
 </svg>
 
 <div id="loader" aria-label="Memuat"><b>BantuKasir</b><i></i></div>
@@ -397,6 +403,8 @@ function seed(){for(let d=0;d<30;d++){const items=S.prod.filter((p,i)=>(d*7+i*3)
 function load(){try{const j=JSON.parse(localStorage.getItem('uk1'));if(j){if(!j.kats)j.kats=[...KATS_DEFAULT];Object.assign(S,j);return true}}catch(e){}return false}
 function save(){try{const{prod,sales,tema,usaha,pajak,kats}=S;localStorage.setItem('uk1',JSON.stringify({prod,sales,tema,usaha,pajak,kats}))}catch(e){}}
 function hitung(days){let m=0,c=0;const per={};S.sales.forEach(s=>{if(DAY-s.day<days)s.items.forEach(i=>{m+=i.p*i.q;c+=i.c*i.q;const r=per[i.id]=per[i.id]||{n:i.n,q:0,m:0,u:0};r.q+=i.q;r.m+=i.p*i.q;r.u+=(i.p-i.c)*i.q})});const k=EXP*days;return{m,c,k,u:m-c-k,per:Object.values(per).sort((a,b)=>b.u-a.u)}}
+/* Fungsi untuk mendeteksi produk best seller berdasarkan jumlah terjual */
+function getBestSellers(days=7){const sold={};S.sales.forEach(s=>{if(DAY-s.day<days)s.items.forEach(i=>{sold[i.id]=(sold[i.id]||0)+i.q})});const sorted=Object.entries(sold).sort((a,b)=>b[1]-a[1]);const threshold=sorted.length>0?sorted[0][1]*0.5:0;return sorted.filter(([id,qty])=>qty>=threshold&&qty>=3).map(([id])=>+id)}
 function hari(o){let m=0,c=0;S.sales.forEach(s=>{if(s.day===DAY-o)s.items.forEach(i=>{m+=i.p*i.q;c+=i.c*i.q})});return m-c-EXP}
 function total(){return Object.entries(S.cart).reduce((t,[id,q])=>t+q*S.prod.find(p=>p.id==id).p,0)}
 const cnt=()=>Object.values(S.cart).reduce((a,b)=>a+b,0);
@@ -425,10 +433,10 @@ ${low.length?`<div class="alert">${ic('warn')}<div>${low.length} barang stoknya 
 <h2 class="sec">Paling untung hari ini</h2>
 ${t.per.length?`<ul class="list">${t.per.slice(0,3).map(r=>`<li><span>${esc(r.n)}<span class="sub">${r.q} terjual</span></span><span class="num pos">+${jt(r.u)}</span></li>`).join('')}</ul>`:`<div class="empty">${ic('cart')}<b>Belum ada jualan hari ini.</b>Ketuk Mulai Jualan untuk mencatat yang pertama.</div>`}
 <button class="btn btn--p bigbtn" data-act="go" data-v="kasir">${ic('cart')}Mulai Jualan</button>`},
-kasir(){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));
+kasir(){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));const bestSellers=getBestSellers(7);const sorted=ps.sort((a,b)=>{const aIsBest=bestSellers.includes(a.id);const bIsBest=bestSellers.includes(b.id);if(aIsBest&&!bIsBest)return -1;if(!aIsBest&&bIsBest)return 1;return 0});
 return `<h1>Kasir</h1><div class="form-group" style="margin:var(--s2) 0 0"><label for="cari" class="lead">Cari produk</label><input class="fld" id="cari" type="search" data-in="cari" value="${esc(S.q)}" placeholder="Ketik nama produk" autocomplete="off" enterkeyhint="search"></div>
 <div class="chips" role="group" aria-label="Kategori">${['Semua',...S.kats].map(k=>`<button class="chip" data-act="kat" data-k="${k}" aria-pressed="${S.kat===k}">${k}</button>`).join('')}</div>
-<div class="grid" id="grid">${gridHtml(ps)}</div><div id="cb">${cartbar()}</div>`},
+<div class="grid" id="grid">${gridHtml(sorted,bestSellers)}</div><div id="cb">${cartbar()}</div>`},
 produk(){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));
 return `<h1>Produk</h1><input class="fld" id="cari" type="search" data-in="cari2" value="${esc(S.q)}" placeholder="Cari produk" aria-label="Cari produk" style="margin-top:var(--s2)" autocomplete="off">
 <div class="chips">${['Semua',...S.kats].map(k=>`<button class="chip" data-act="kat" data-k="${k}" aria-pressed="${S.kat===k}">${k}</button>`).join('')}</div>
@@ -445,7 +453,7 @@ set(){return `<h1>Pengaturan</h1><div class="set" style="margin-top:var(--s3)">
 <label style="display:flex;gap:var(--s3);align-items:center;min-height:48px"><input type="checkbox" data-in="pajak" ${S.pajak?'checked':''} style="width:24px;height:24px;accent-color:var(--brand)"> Tampilkan pajak (opsional, belum menghitung)</label>
 <a class="btn" href="https://wa.me/[ISI NOMOR WA]">Bantuan lewat WhatsApp</a>
 <button class="btn" style="color:var(--bad);border-color:var(--bad)" data-act="out">Keluar</button></div>`}};
-function gridHtml(ps){return ps.length?ps.map(p=>`<button class="prod" data-act="add" data-id="${p.id}" ${p.s<=(S.cart[p.id]||0)?'disabled':''}>${S.cart[p.id]?`<span class="q">${S.cart[p.id]}</span>`:''}${p.f?`<img src="${p.f}" class="prod-img" alt="${esc(p.n)}">`:`<div class="prod-img placeholder">${ic('image')}</div>`}<b>${esc(p.n)}</b><span class="num">${rp(p.p)}</span><small class="${p.s<=LOW?'low':''}">${p.s===0?'Habis':'Stok '+p.s}</small></button>`).join(''):`<div class="empty" style="grid-column:1/-1"><b>Produk tidak ditemukan.</b>Coba kata lain atau tambah di menu Produk.</div>`}
+function gridHtml(ps,bestSellers=[]){return ps.length?ps.map(p=>{const isBest=bestSellers.includes(p.id);return `<button class="prod${isBest?' bestseller':''}" data-act="add" data-id="${p.id}" ${p.s<=(S.cart[p.id]||0)?'disabled':''}>${isBest?`<span class="bestseller-badge" title="Produk Terlaris"><svg aria-hidden="true"><use href="#i-fire"/></svg></span>`:''}${S.cart[p.id]?`<span class="q">${S.cart[p.id]}</span>`:''}${p.f?`<img src="${p.f}" class="prod-img" alt="${esc(p.n)}">`:`<div class="prod-img placeholder">${ic('image')}</div>`}<b>${esc(p.n)}</b><span class="num">${rp(p.p)}</span><small class="${p.s<=LOW?'low':''}">${p.s===0?'Habis':'Stok '+p.s}</small></button>`}).join(''):`<div class="empty" style="grid-column:1/-1"><b>Produk tidak ditemukan.</b>Coba kata lain atau tambah di menu Produk.</div>`}
 function plist(ps){return ps.length?ps.map(p=>`<button data-act="edit" data-id="${p.id}">${p.f?`<img src="${p.f}" class="prod-thumb" alt="${esc(p.n)}">`:`<div class="prod-thumb placeholder">${ic('image')}</div>`}<div class="prod-info"><span class="prod-name">${esc(p.n)}</span><span class="sub">${rp(p.p)} - untung ${rp(p.p-p.c)}</span></div><span class="stok ${p.s<=LOW?'low':''}">${p.s<=LOW?'Menipis: ':'Stok '}${p.s}</span></button>`).join(''):`<div class="empty"><b>Belum ada produk.</b>Tambah produk pertamamu.</div>`}
 function cartbar(){return cnt()?`<button class="cartbar" data-act="cart" id="cbtn"><span>${cnt()} barang</span><span class="num">${rp(total())}</span><span>Bayar &rsaquo;</span></button>`:''}
 function chart(n){const v=[];for(let i=n-1;i>=0;i--)v.push(hari(i));const mx=Math.max(...v.map(Math.abs),1);return `<div class="chart" role="img" aria-label="Grafik untung ${n} hari terakhir">${v.map((x,i)=>`<i class="${x<0?'n':''} ${i===n-1?'t':''}" style="height:${Math.max(Math.abs(x)/mx*100,2)}%" title="${rp(x)}"></i>`).join('')}</div><div class="axis"><span>${n} hari lalu</span><span>Hari ini</span></div>`}
@@ -477,7 +485,7 @@ openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&
 <div class="kemb" id="marg"></div><button class="btn btn--p btn-submit" type="submit">Simpan</button></form>`);margin();updateFotoPreview()}
 function margin(){const p=+($('#pf-p').dataset.raw||$('#pf-p').value.replace(/\D/g,''))||0,c=+($('#pf-c').dataset.raw||$('#pf-c').value.replace(/\D/g,''))||0,m=$('#marg');const u=p-c;m.textContent=p?`Untung tiap terjual: ${rp(u)} (${Math.round(u/p*100)}%)`:'Isi harga jual dan modal untuk melihat untung.';m.style.background=u<0?'var(--bad-bg)':''}
 function setCart(id,d){const p=S.prod.find(x=>x.id==id),q=(S.cart[id]||0)+d;if(q<=0)delete S.cart[id];else if(q<=p.s)S.cart[id]=q;}
-function refreshKasir(){const g=$('#grid');if(g){g.innerHTML=gridHtml(S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase())));$('#cb').innerHTML=cartbar()}}
+function refreshKasir(){const g=$('#grid');if(g){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));const bestSellers=getBestSellers(7);const sorted=ps.sort((a,b)=>{const aIsBest=bestSellers.includes(a.id);const bIsBest=bestSellers.includes(b.id);if(aIsBest&&!bIsBest)return -1;if(!aIsBest&&bIsBest)return 1;return 0});g.innerHTML=gridHtml(sorted,bestSellers);$('#cb').innerHTML=cartbar()}}
 /* Aksi (event delegation) */
 const A={
 go:b=>go(b.dataset.v),
