@@ -249,8 +249,34 @@ nav.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-tem
 #toast{position:fixed;left:var(--s3);right:var(--s3);bottom:calc(var(--navh) + 84px + env(safe-area-inset-bottom));z-index:80;max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:12px 16px;border-radius:var(--r2);background:var(--ink);color:var(--paper);font-weight:600;box-shadow:var(--sh2);opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity var(--t),transform var(--t)}
 #toast.on{opacity:1;transform:none;pointer-events:auto}#toast button{min-height:44px;padding:0 8px;border:0;background:none;color:var(--accent);font:700 16px var(--fb);cursor:pointer}
 
+/* ===== DAFTAR BELANJA STOK ===== */
+.belanja-list-item{display:grid;grid-template-columns:1fr auto;gap:var(--s2);align-items:start;padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+.belanja-list-item:last-child{border-bottom:0}
+.belanja-nama{font-weight:600;font-size:15px}
+.belanja-meta{font-size:13px;color:var(--muted);margin-top:2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.belanja-badge-habis{background:var(--bad-bg);color:var(--bad);font:700 11px var(--fb);padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.belanja-badge-tipis{background:var(--bad-bg);color:var(--warn);font:700 11px var(--fb);padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.belanja-right{text-align:right;flex-shrink:0}
+.belanja-modal{font:700 15px var(--fh);color:var(--ink)}
+.belanja-qty-suggest{font-size:13px;color:var(--muted);margin-top:2px}
+.belanja-total-box{margin-top:var(--s3);padding:var(--s3);border-radius:var(--r2);background:var(--ok-bg);display:flex;justify-content:space-between;align-items:center}
+.belanja-total-box .lbl{font-size:14px;color:var(--brand);font-weight:600}
+.belanja-total-box .val{font:800 22px var(--fh);color:var(--brand)}
+.alert-crisis{display:flex;gap:var(--s2);align-items:flex-start;margin:var(--s3) 0;padding:var(--s3);border-radius:var(--r2);background:var(--bad-bg);border-left:4px solid var(--bad);color:var(--bad)}
+.alert-crisis .alert-body{flex:1}
+.alert-crisis .alert-title{font-weight:700;font-size:15px;margin-bottom:4px;color:var(--bad)}
+.alert-crisis .alert-detail{font-size:13px;color:var(--muted);line-height:1.5}
+.alert-crisis .alert-actions{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.alert-crisis .alert-actions .btn{min-height:40px;font-size:14px}
+.alert-warn{display:flex;gap:var(--s2);align-items:flex-start;margin:var(--s3) 0;padding:var(--s3);border-radius:var(--r2);background:var(--bad-bg);border-left:4px solid var(--warn);color:var(--warn)}
+.alert-warn .alert-body{flex:1}
+.alert-warn .alert-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.alert-warn .alert-detail{font-size:13px;color:var(--muted);line-height:1.5}
+.alert-warn .alert-actions{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.alert-warn .alert-actions .btn{min-height:40px;font-size:14px}
+.belanja-share-btn{display:flex;align-items:center;gap:var(--s2);width:100%;min-height:48px;padding:0 var(--s3);border-radius:var(--r2);border:2px solid var(--line);background:var(--card);color:var(--ink);font:600 15px var(--fb);cursor:pointer;margin-top:var(--s2)}
+.belanja-share-btn:hover{border-color:var(--brand);color:var(--brand)}
 .kasbon-nav-badge{position:absolute;top:6px;right:12px;min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font:700 11px/18px var(--fb);text-align:center;padding:0 4px}
-/* ===== BREAKPOINT: TABLET 768px ===== */
 @media (min-width:768px){
 .container{padding:0 max(var(--s5),env(safe-area-inset-left))}
 .header-inner{min-height:64px;padding:0 var(--s5)}
@@ -308,6 +334,8 @@ nav.bnav{position:sticky;top:0;grid-column:1;grid-row:1/3;height:100dvh;display:
 <symbol id="i-kasbon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></symbol>
 <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
 <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
 </svg>
 
 <div id="loader" aria-label="Memuat"><b>BantuKasir</b><i></i></div>
@@ -450,7 +478,7 @@ const rp=n=>(n<0?'-':'')+'Rp '+Math.abs(Math.round(n)).toLocaleString('id-ID');
 const jt=n=>{const a=Math.abs(n);return a>=1e6?(n<0?'-':'')+'Rp '+(a/1e6).toFixed(1).replace('.',',').replace(',0','')+' jt':rp(n)};
 const ic=(n,c='')=>`<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const DAY=Math.floor(Date.now()/864e5),EXP=15000,LOW=5;
+const DAY=Math.floor(Date.now()/864e5),EXP=15000,LOW=5,KRISIS=2;
 const KATS_DEFAULT=['Minuman','Makanan','Camilan'];
 const VIEWS=['home','kasir','produk','laporan','kasbon','set'];
 let tempFoto='';let tempVariants=[];
@@ -490,11 +518,41 @@ function render(left){const m=$('#main');m.innerHTML=`<div class="view ${left?'l
 /* Tampilan */
 const V={
 home(){if(S.load)return '<div class="sk" style="height:140px"></div><div class="sk"></div><div class="sk"></div>';
-const t=hitung(1),low=S.prod.filter(p=>p.s<=LOW),ky=hitung(2).u-t.u+EXP; const kem=hari(1);
+const t=hitung(1),kem=hari(1);
+const prodKrisis=S.prod.filter(p=>{if(p.v&&p.v.length)return p.v.some(v=>v.s===0);return p.s===0});
+const prodTipis=S.prod.filter(p=>{if(p.v&&p.v.length)return p.v.some(v=>v.s>0&&v.s<=LOW);return p.s>0&&p.s<=LOW});
+const semKritis=getStokKritis();
+/* Banner stok: krisis (ada yang habis) tampil merah, tipis tampil kuning-oranye */
+let bannerStok='';
+if(prodKrisis.length){
+  bannerStok=`<div class="alert-crisis" role="alert">
+${ic('warn')}
+<div class="alert-body">
+  <div class="alert-title">🚨 ${prodKrisis.length} produk HABIS${prodTipis.length?` · ${prodTipis.length} menipis`:''}</div>
+  <div class="alert-detail">${esc(prodKrisis.slice(0,2).map(p=>p.n).join(', '))}${prodKrisis.length>2?` +${prodKrisis.length-2} lainnya`:''} tidak bisa dijual sekarang.</div>
+  <div class="alert-actions">
+    <button class="btn" style="background:var(--bad);color:#fff;border-color:var(--bad)" data-act="belanja-list">${ic('bag')} Buat Daftar Belanja</button>
+    <button class="btn" style="border-color:var(--bad);color:var(--bad)" data-act="go" data-v="produk">Cek Stok</button>
+  </div>
+</div>
+</div>`;
+}else if(prodTipis.length){
+  bannerStok=`<div class="alert-warn" role="alert">
+${ic('warn')}
+<div class="alert-body">
+  <div class="alert-title">⚠️ ${prodTipis.length} produk stoknya menipis</div>
+  <div class="alert-detail">${esc(prodTipis.slice(0,2).map(p=>p.n).join(', '))}${prodTipis.length>2?` +${prodTipis.length-2} lainnya`:''} — segera kulak sebelum kehabisan.</div>
+  <div class="alert-actions">
+    <button class="btn" style="background:var(--warn);color:#fff;border-color:var(--warn)" data-act="belanja-list">${ic('bag')} Buat Daftar Belanja</button>
+    <button class="btn" style="border-color:var(--warn);color:var(--warn)" data-act="go" data-v="produk">Cek Stok</button>
+  </div>
+</div>
+</div>`;
+}
 return `<section class="hero-u"><span class="lead">Untung hari ini</span><span class="num ${t.u<0?'neg':'pos'}" id="u-val" data-v="0">${jt(t.u)}</span>
 <span class="badge ${t.u<kem?'neg':''}">${ic(t.u<kem?'down':'up')}${t.u<kem?'Lebih rendah':'Lebih tinggi'} dari kemarin (${jt(kem)})</span></section>
 <div class="row2"><div><span class="lead">Uang masuk</span><span class="num">${jt(t.m)}</span></div><div><span class="lead">Uang keluar</span><span class="num">${jt(t.c+t.k)}</span><small style="color:var(--muted)">modal + pengeluaran</small></div></div>
-${low.length?`<div class="alert">${ic('warn')}<div>${low.length} barang stoknya menipis: ${esc(low.slice(0,2).map(p=>p.n).join(', '))}${low.length>2?', ...':''}</div><button class="btn" data-act="go" data-v="produk">Cek stok</button></div>`:''}
+${bannerStok}
 <h2 class="sec">Paling untung hari ini</h2>
 ${t.per.length?`<ul class="list">${t.per.slice(0,3).map(r=>`<li><span>${esc(r.n)}<span class="sub">${r.q} terjual</span></span><span class="num pos">+${jt(r.u)}</span></li>`).join('')}</ul>`:`<div class="empty">${ic('cart')}<b>Belum ada jualan hari ini.</b>Ketuk Mulai Jualan untuk mencatat yang pertama.</div>`}
 <button class="btn btn--p bigbtn" data-act="go" data-v="kasir">${ic('cart')}Mulai Jualan</button>`},
@@ -503,8 +561,10 @@ return `<h1>Kasir</h1><div class="form-group" style="margin:var(--s2) 0 0"><labe
 <div class="chips" role="group" aria-label="Kategori">${['Semua',...S.kats].map(k=>`<button class="chip" data-act="kat" data-k="${k}" aria-pressed="${S.kat===k}">${k}</button>`).join('')}</div>
 <div class="grid" id="grid">${gridHtml(sorted,bestSellers)}</div><div id="cb">${cartbar()}</div>`},
 produk(){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));
+const semKritis=getStokKritis();
 return `<h1>Produk</h1><input class="fld" id="cari" type="search" data-in="cari2" value="${esc(S.q)}" placeholder="Cari produk" aria-label="Cari produk" style="margin-top:var(--s2)" autocomplete="off">
 <div class="chips">${['Semua',...S.kats].map(k=>`<button class="chip" data-act="kat" data-k="${k}" aria-pressed="${S.kat===k}">${k}</button>`).join('')}</div>
+${semKritis.length?`<button class="btn" style="width:100%;margin-bottom:var(--s2);border-color:var(--warn);color:var(--warn)" data-act="belanja-list">${ic('bag')} Buat Daftar Belanja (${semKritis.length} produk kritis)</button>`:''}
 <ul class="list" id="plist">${plist(ps)}</ul><button class="btn btn--p bigbtn" data-act="new">${ic('plus')}Tambah Produk</button>`},
 laporan(){const r=hitung(S.per),bars=S.per===30?30:7;
 return `<h1>Laporan</h1><div class="seg" role="group" aria-label="Periode" style="margin:var(--s3) 0">${[[1,'Hari ini'],[7,'Minggu ini'],[30,'Bulan ini']].map(([d,l])=>`<button data-act="per" data-d="${d}" aria-pressed="${S.per===d}">${l}</button>`).join('')}</div>
@@ -532,6 +592,62 @@ function gridHtml(ps,bestSellers=[]){return ps.length?ps.map(p=>{const isBest=be
 function plist(ps){return ps.length?ps.map(p=>{const hasVar=p.v&&p.v.length>0;const totStock=hasVar?p.v.reduce((sum,v)=>sum+v.s,0):p.s;return `<button data-act="edit" data-id="${p.id}">${p.f?`<img src="${p.f}" class="prod-thumb" alt="${esc(p.n)}">`:`<div class="prod-thumb placeholder">${ic('image')}</div>`}<div class="prod-info"><span class="prod-name">${esc(p.n)}${hasVar?` <span style="font-size:12px;color:var(--muted)">(${p.v.length} varian)</span>`:''}</span><span class="sub">${hasVar?`Mulai ${rp(Math.min(...p.v.map(v=>v.p)))} - ${p.v.length} pilihan`:`${rp(p.p)} - untung ${rp(p.p-p.c)}`}</span></div><span class="stok ${totStock<=LOW?'low':''}">${totStock<=LOW?'Menipis: ':'Stok '}${totStock}</span></button>`}).join(''):`<div class="empty"><b>Belum ada produk.</b>Tambah produk pertamamu.</div>`}
 function cartbar(){return cnt()?`<button class="cartbar" data-act="cart" id="cbtn"><span>${cnt()} barang</span><span class="num">${rp(total())}</span><span>Bayar &rsaquo;</span></button>`:''}
 function chart(n){const v=[];for(let i=n-1;i>=0;i--)v.push(hari(i));const mx=Math.max(...v.map(Math.abs),1);return `<div class="chart" role="img" aria-label="Grafik untung ${n} hari terakhir">${v.map((x,i)=>`<i class="${x<0?'n':''} ${i===n-1?'t':''}" style="height:${Math.max(Math.abs(x)/mx*100,2)}%" title="${rp(x)}"></i>`).join('')}</div><div class="axis"><span>${n} hari lalu</span><span>Hari ini</span></div>`}
+/* ===== DAFTAR BELANJA STOK ===== */
+function getStokKritis(){
+  /* Kumpulkan semua produk dengan stok menipis atau habis, termasuk varian */
+  const hasil=[];
+  S.prod.forEach(p=>{
+    if(p.v&&p.v.length){
+      p.v.forEach((v,vi)=>{
+        const totStok=v.s;
+        if(totStok<=LOW){
+          /* Perkiraan beli: isi hingga 20 pcs jika habis, atau +15 jika menipis */
+          const saranBeli=totStok===0?20:Math.max(20-totStok,10);
+          hasil.push({id:p.id,vi,nama:`${p.n} (${v.n})`,stok:totStok,modal:v.c,saranBeli,estimasi:v.c*saranBeli,habis:totStok===0,krisis:totStok<=KRISIS})
+        }
+      });
+    }else{
+      if(p.s<=LOW){
+        const saranBeli=p.s===0?20:Math.max(20-p.s,10);
+        hasil.push({id:p.id,vi:null,nama:p.n,stok:p.s,modal:p.c,saranBeli,estimasi:p.c*saranBeli,habis:p.s===0,krisis:p.s<=KRISIS})
+      }
+    }
+  });
+  /* Urutan: habis dulu, lalu krisis, lalu menipis */
+  return hasil.sort((a,b)=>(b.habis-a.habis)||(b.krisis-a.krisis));
+}
+function belanjaSheet(){
+  const list=getStokKritis();
+  if(!list.length){toast('Semua stok masih aman!');return}
+  const totalEstimasi=list.reduce((s,x)=>s+x.estimasi,0);
+  const habis=list.filter(x=>x.habis);
+  const tipis=list.filter(x=>!x.habis);
+  const shareText=list.map(x=>`• ${x.nama}: stok ${x.stok} → beli ±${x.saranBeli} pcs (modal ~${rp(x.estimasi)})`).join('\n');
+  const shareFull=`📋 Daftar Belanja Stok\n${shareText}\n\nTotal estimasi modal: ${rp(totalEstimasi)}`;
+  openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
+<h2>${ic('bag')} Daftar Belanja</h2>
+<p class="subtitle">${list.length} produk perlu dikulak ulang</p>
+${habis.length?`<div style="padding:8px 12px;border-radius:var(--r1);background:var(--bad-bg);color:var(--bad);font-weight:700;font-size:13px;margin-bottom:var(--s2)">🚨 ${habis.length} produk HABIS — tidak bisa dijual sekarang</div>`:''}
+<div class="belanja-total-box" style="margin-bottom:var(--s3)">
+  <div><span class="lbl">Estimasi total modal kulak</span><br><small style="color:var(--muted);font-size:12px">Berdasarkan harga modal × saran beli</small></div>
+  <span class="val">${rp(totalEstimasi)}</span>
+</div>
+<div>${list.map(x=>`<div class="belanja-list-item">
+  <div>
+    <div class="belanja-nama">${esc(x.nama)}</div>
+    <div class="belanja-meta">
+      ${x.habis?`<span class="belanja-badge-habis">Habis</span>`:`<span class="belanja-badge-tipis">Sisa ${x.stok}</span>`}
+      <span>Modal/pcs: ${rp(x.modal)}</span>
+    </div>
+  </div>
+  <div class="belanja-right">
+    <div class="belanja-modal">${rp(x.estimasi)}</div>
+    <div class="belanja-qty-suggest">Beli ±${x.saranBeli} pcs</div>
+  </div>
+</div>`).join('')}</div>
+<button class="belanja-share-btn" data-act="belanja-share" data-text="${esc(shareFull)}">${ic('share')} Bagikan ke WhatsApp / Salin</button>
+<button class="btn btn--p btn-submit" style="margin-top:var(--s2)" data-act="go" data-v="produk" onclick="tutupAuth()">Lihat semua produk</button>`);
+}
 /* Keranjang & bayar */
 function cartSheet(){const es=Object.entries(S.cart);if(!es.length){closeSheet();return}const t=total();
 openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button><h2>Keranjang</h2>
@@ -693,6 +809,8 @@ openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&
   catch(e){toast('Gagal: '+e.message);btn.disabled=false;btn.textContent='Hapus Data Kasbon Ini'}},
 'ci-quick':b=>{const input=$('#ci-jml');const n=b.dataset.n;const formatted=parseInt(n,10).toLocaleString('id-ID');input.value=formatted;input.dataset.raw=n},
 new:()=>produkForm(),edit:b=>produkForm(b.dataset.id),
+'belanja-list':()=>belanjaSheet(),
+'belanja-share':b=>{const teks=b.dataset.text||'';if(navigator.share){navigator.share({title:'Daftar Belanja Stok',text:teks}).catch(()=>{})}else{navigator.clipboard.writeText(teks).then(()=>toast('Daftar belanja disalin!')).catch(()=>{const wa=`https://wa.me/?text=${encodeURIComponent(teks)}`;window.open(wa,'_blank')})}},
 'change-foto':()=>{const input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=e=>handleFotoUpload(e);input.click()},
 'remove-foto':()=>{tempFoto='';updateFotoPreview()},
 'auto-foto':async()=>{const nameInput=$('#pf-n');const productName=nameInput.value.trim();if(!productName){toast('Isi nama produk terlebih dahulu');nameInput.focus();return}const box=$('#foto-box');const originalHTML=box.innerHTML;box.innerHTML=`<div style="text-align:center;padding:var(--s4);color:var(--muted)">Mencari foto "${productName}"...</div>`;const photoUrl=await fetchUnsplashPhoto(productName);if(photoUrl){tempFoto=photoUrl;updateFotoPreview();toast('Foto otomatis berhasil dimuat')}else{box.innerHTML=originalHTML;toast('Tidak menemukan foto yang sesuai')}},
