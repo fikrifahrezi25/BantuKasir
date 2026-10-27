@@ -120,6 +120,144 @@ app.get("/api/product-photo", (req, res) => {
   });
 });
 
+// ===== ENDPOINT KASBON API =====
+// Data kasbon disimpan ke file JSON agar persisten tanpa database eksternal
+const kasbonFilePath = path.join(__dirname, "kasbon-data.json");
+
+function bacaKasbon() {
+  try {
+    if (!fs.existsSync(kasbonFilePath)) return [];
+    const raw = fs.readFileSync(kasbonFilePath, "utf-8").trim();
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    console.error("[Kasbon] Gagal membaca file:", err);
+    return [];
+  }
+}
+
+function simpanKasbon(data) {
+  try {
+    fs.writeFileSync(kasbonFilePath, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[Kasbon] Gagal menyimpan file:", err);
+    throw err;
+  }
+}
+
+// GET /api/kasbon — Ambil semua data kasbon
+app.get("/api/kasbon", (req, res) => {
+  try {
+    const data = bacaKasbon();
+    console.log(`[Kasbon] GET semua: ${data.length} pelanggan`);
+    res.json({ success: true, kasbon: data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Gagal membaca data kasbon" });
+  }
+});
+
+// POST /api/kasbon — Buat entri kasbon baru atau tambah utang ke pelanggan existing
+// Body: { nama, hp, jml, catatan, items }
+app.post("/api/kasbon", (req, res) => {
+  try {
+    const { nama, hp, jml, catatan, items } = req.body;
+    if (!nama || !nama.trim()) {
+      return res.status(400).json({ success: false, error: "Nama pelanggan wajib diisi" });
+    }
+    if (!jml || isNaN(jml) || Number(jml) <= 0) {
+      return res.status(400).json({ success: false, error: "Jumlah kasbon harus lebih dari 0" });
+    }
+
+    const data = bacaKasbon();
+    let pel = data.find(p => p.nama.toLowerCase() === nama.trim().toLowerCase());
+
+    if (!pel) {
+      pel = { id: `kb_${Date.now()}`, nama: nama.trim(), hp: hp ? hp.trim() : "", riwayat: [] };
+      data.push(pel);
+      console.log(`[Kasbon] Pelanggan baru: "${pel.nama}" (${pel.id})`);
+    } else {
+      if (hp && hp.trim()) pel.hp = hp.trim();
+      console.log(`[Kasbon] Tambah utang ke pelanggan existing: "${pel.nama}"`);
+    }
+
+    pel.riwayat.push({
+      tipe: "utang",
+      jml: Number(jml),
+      tgl: Date.now(),
+      catatan: catatan ? catatan.trim() : "",
+      items: items || []
+    });
+
+    simpanKasbon(data);
+    res.json({ success: true, pelanggan: pel });
+  } catch (err) {
+    console.error("[Kasbon] POST error:", err);
+    res.status(500).json({ success: false, error: "Gagal menyimpan kasbon" });
+  }
+});
+
+// POST /api/kasbon/:id/bayar — Catat pembayaran cicilan atau lunas
+// Body: { jml, catatan }
+app.post("/api/kasbon/:id/bayar", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { jml, catatan } = req.body;
+
+    if (!jml || isNaN(jml) || Number(jml) <= 0) {
+      return res.status(400).json({ success: false, error: "Jumlah bayar harus lebih dari 0" });
+    }
+
+    const data = bacaKasbon();
+    const pel = data.find(p => p.id === id);
+    if (!pel) {
+      return res.status(404).json({ success: false, error: "Pelanggan tidak ditemukan" });
+    }
+
+    const totalUtang = pel.riwayat.filter(r => r.tipe === "utang").reduce((s, r) => s + r.jml, 0);
+    const totalBayar = pel.riwayat.filter(r => r.tipe === "bayar").reduce((s, r) => s + r.jml, 0);
+    const sisa = totalUtang - totalBayar;
+
+    const jumlahBayar = Math.min(Number(jml), sisa);
+    if (jumlahBayar <= 0) {
+      return res.status(400).json({ success: false, error: "Kasbon pelanggan ini sudah lunas" });
+    }
+
+    pel.riwayat.push({
+      tipe: "bayar",
+      jml: jumlahBayar,
+      tgl: Date.now(),
+      catatan: catatan ? catatan.trim() : ""
+    });
+
+    simpanKasbon(data);
+    const sisaBaru = sisa - jumlahBayar;
+    console.log(`[Kasbon] Bayar "${pel.nama}": ${jumlahBayar}, sisa: ${sisaBaru}`);
+    res.json({ success: true, pelanggan: pel, sisa: sisaBaru });
+  } catch (err) {
+    console.error("[Kasbon] POST bayar error:", err);
+    res.status(500).json({ success: false, error: "Gagal menyimpan pembayaran" });
+  }
+});
+
+// DELETE /api/kasbon/:id — Hapus seluruh data kasbon satu pelanggan
+app.delete("/api/kasbon/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = bacaKasbon();
+    const idx = data.findIndex(p => p.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ success: false, error: "Pelanggan tidak ditemukan" });
+    }
+    const nama = data[idx].nama;
+    data.splice(idx, 1);
+    simpanKasbon(data);
+    console.log(`[Kasbon] Hapus "${nama}" (${id})`);
+    res.json({ success: true, message: `Data kasbon "${nama}" dihapus` });
+  } catch (err) {
+    console.error("[Kasbon] DELETE error:", err);
+    res.status(500).json({ success: false, error: "Gagal menghapus kasbon" });
+  }
+});
+
 // Jalankan server
 app.listen(PORT, () => {
   console.log(`Web Server running at http://localhost:${PORT}`);
