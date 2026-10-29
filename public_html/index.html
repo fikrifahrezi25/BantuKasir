@@ -343,6 +343,10 @@ nav.bnav{position:sticky;top:0;grid-column:1;grid-row:1/3;height:100dvh;display:
 .cta-primary{font-size:18px;min-height:60px}
 .section-header h2{font-size:46px}}
 
+/* ===== STRUK PREVIEW ===== */
+#struk-preview table td{vertical-align:top}
+#struk-preview{box-shadow:var(--sh1)}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -662,7 +666,7 @@ const trxCards=filtered.length?filtered.map((s,idx)=>{
   </div>
   <div class="trx-actions">
     ${!s.void?`<button class="btn" style="color:var(--bad);border-color:var(--bad)" data-act="void-trx" data-idx="${S.sales.indexOf(s)}">${ic('void')} Batalkan</button>`:'<span style="font-size:13px;color:var(--bad);padding:8px 4px">⚠️ Transaksi dibatalkan</span>'}
-    <button class="btn" data-act="share-struk" data-idx="${S.sales.indexOf(s)}">${ic('wa')} Kirim Struk</button>
+    <button class="btn" data-act="share-struk" data-idx="${S.sales.indexOf(s)}">${ic('bag')} Cetak Struk</button>
   </div>
 </div>`}).join(''):`<div class="rwyt-empty">${ic('history')}<b>Tidak ada transaksi</b><span>Tidak ada transaksi pada rentang tanggal ini.</span></div>`;
 return `<h1>Riwayat Transaksi</h1>
@@ -1006,7 +1010,7 @@ demo:()=>{if(!load()){S.sales=[];seed()}enterApp(true)},
   if(S.view==='riwayat')render();
   else if(S.view==='home')render();
 },
-/* ===== RIWAYAT: kirim struk WhatsApp ===== */
+/* ===== RIWAYAT: cetak / preview struk ===== */
 'share-struk':b=>{
   const idx=+b.dataset.idx;
   const s=S.sales[idx];
@@ -1019,16 +1023,105 @@ demo:()=>{if(!load()){S.sales=[];seed()}enterApp(true)},
   const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
   const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
   const itemsText=s.items.map(i=>`  ${i.n} x${i.q}  ${rp(i.p*i.q)}`).join('\n');
-  const struk=`🧾 *STRUK BELANJA*\n${esc(S.usaha)}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
+  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
+  /* Bangun baris item HTML untuk struk visual */
+  const itemRowsHtml=s.items.map(i=>`<tr><td style="padding:3px 0">${esc(i.n)} <span style="color:#888">×${i.q}</span></td><td style="padding:3px 0;text-align:right;white-space:nowrap">${rp(i.p*i.q)}</td></tr>`).join('');
   openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
-<h2>${ic('wa')} Kirim Struk</h2>
-<p class="subtitle">Struk untuk transaksi ${esc(kode)}</p>
-<div style="background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:var(--s3);margin:var(--s3) 0;font-family:monospace;font-size:13px;white-space:pre-wrap;color:var(--ink);line-height:1.6;overflow-x:auto">${esc(struk)}</div>
-<div style="display:grid;gap:var(--s2)">
-  <a class="btn btn--p" style="min-height:52px;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent(struk)}" target="_blank" rel="noopener">${ic('wa')} Buka WhatsApp & Kirim</a>
-  <button class="btn" style="min-height:52px" data-act="salin-struk" data-text="${esc(struk)}">📋 Salin Teks Struk</button>
+<h2>🧾 Preview Struk</h2>
+<p class="subtitle">Transaksi ${esc(kode)}</p>
+
+<!-- Struk visual -->
+<div id="struk-preview" style="background:#fff;color:#000;border:1px dashed #ccc;border-radius:var(--r2);padding:20px;margin:var(--s3) 0;font-family:'Courier New',monospace;font-size:13px;line-height:1.7;max-width:360px;margin-left:auto;margin-right:auto">
+  <div style="text-align:center;font-weight:800;font-size:16px;margin-bottom:4px">${esc(S.usaha)}</div>
+  <div style="text-align:center;font-size:12px;color:#666;margin-bottom:12px">${tgl} · ${jam}</div>
+  <hr style="border:none;border-top:1px dashed #bbb;margin:8px 0">
+  <table style="width:100%;border-collapse:collapse">${itemRowsHtml}</table>
+  <hr style="border:none;border-top:1px dashed #bbb;margin:8px 0">
+  <div style="display:flex;justify-content:space-between;font-weight:800;font-size:15px"><span>TOTAL</span><span>${rp(tot)}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-top:4px"><span>Pembayaran</span><span>${metLbl}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:#666"><span>No. Transaksi</span><span>${esc(kode)}</span></div>
+  <div style="text-align:center;font-size:12px;color:#888;margin-top:12px">Terima kasih sudah belanja! 🙏</div>
 </div>
-<p style="font-size:13px;color:var(--muted);text-align:center;margin-top:var(--s2)">Tempel struk di chat WhatsApp pelanggan</p>`)},
+
+<!-- Tombol aksi utama -->
+<div style="display:grid;gap:var(--s2)">
+  <button class="btn btn--p" style="min-height:52px" data-act="cetak-pdf-struk" data-idx="${idx}">🖨️ Cetak / Unduh PDF</button>
+  <button class="btn" style="min-height:52px;border-color:#25D366;color:#25D366" data-act="form-wa-struk" data-idx="${idx}">${ic('wa')} Buka WhatsApp &amp; Kirim</button>
+  <button class="btn" style="min-height:48px" data-act="salin-struk" data-text="${esc(strukTeks)}">📋 Salin Teks Struk</button>
+</div>
+<p style="font-size:13px;color:var(--muted);text-align:center;margin-top:var(--s2)">Struk siap dibagikan ke pelanggan</p>`);
+},
+/* Cetak / unduh PDF struk menggunakan window.print() */
+'cetak-pdf-struk':b=>{
+  const idx=+b.dataset.idx;
+  const s=S.sales[idx];
+  if(!s)return;
+  function fmtJamP(ts){if(!ts)return '--:--';const d=new Date(ts);return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}
+  function fmtTglP(ts,day){if(ts){const d=new Date(ts);return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}return new Date(day*864e5).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
+  const kode=s.id||('TRX-'+String((s.ts||s.day*864e5)).slice(-6));
+  const jam=fmtJamP(s.ts);
+  const tgl=fmtTglP(s.ts,s.day);
+  const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
+  const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
+  const itemRowsHtml=s.items.map(i=>`<tr><td style="padding:4px 0">${esc(i.n)} ×${i.q}</td><td style="padding:4px 0;text-align:right;white-space:nowrap">${rp(i.p*i.q)}</td></tr>`).join('');
+  const printWin=window.open('','_blank','width=400,height=600');
+  if(!printWin){toast('Izinkan popup untuk mencetak struk');return}
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Struk - ${esc(kode)}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Courier New',monospace;font-size:13px;line-height:1.7;color:#000;background:#fff;padding:24px;max-width:320px;margin:0 auto}
+  h1{font-size:16px;font-weight:800;text-align:center;margin-bottom:4px}
+  .sub{font-size:12px;color:#666;text-align:center;margin-bottom:12px}
+  hr{border:none;border-top:1px dashed #bbb;margin:10px 0}
+  table{width:100%;border-collapse:collapse}
+  .total-row{font-weight:800;font-size:15px}
+  .meta{font-size:12px;color:#555}
+  .footer{text-align:center;font-size:12px;color:#888;margin-top:14px}
+  @media print{body{padding:0}@page{margin:10mm}}
+</style></head><body>
+<h1>${esc(S.usaha)}</h1>
+<div class="sub">${tgl} · ${jam}</div>
+<hr>
+<table>${itemRowsHtml}</table>
+<hr>
+<table><tr class="total-row"><td>TOTAL</td><td style="text-align:right">${rp(tot)}</td></tr>
+<tr class="meta"><td>Pembayaran</td><td style="text-align:right">${metLbl}</td></tr>
+<tr class="meta"><td>No. Transaksi</td><td style="text-align:right">${esc(kode)}</td></tr></table>
+<div class="footer">Terima kasih sudah belanja! 🙏</div>
+</body></html>`);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(()=>printWin.print(),400);
+},
+/* Tampilkan form input nomor WA di dalam sheet */
+'form-wa-struk':b=>{
+  const idx=+b.dataset.idx;
+  const s=S.sales[idx];
+  if(!s)return;
+  function fmtJamW(ts){if(!ts)return '--:--';const d=new Date(ts);return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}
+  function fmtTglW(ts,day){if(ts){const d=new Date(ts);return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}return new Date(day*864e5).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
+  const kode=s.id||('TRX-'+String((s.ts||s.day*864e5)).slice(-6));
+  const jam=fmtJamW(s.ts);
+  const tgl=fmtTglW(s.ts,s.day);
+  const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
+  const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
+  const itemsText=s.items.map(i=>`  ${i.n} x${i.q}  ${rp(i.p*i.q)}`).join('\n');
+  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
+  openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
+<h2>${ic('wa')} Kirim via WhatsApp</h2>
+<p class="subtitle">Masukkan nomor WA tujuan pelanggan</p>
+<form id="form-wa-kirim" novalidate>
+<div class="form-group">
+  <label for="wa-nomor">Nomor WhatsApp Tujuan</label>
+  <input class="fld" id="wa-nomor" type="tel" inputmode="tel" placeholder="Contoh: 081234567890" autocomplete="tel" required>
+  <div class="form-error">Masukkan nomor WhatsApp yang valid (min. 10 digit)</div>
+  <small style="color:var(--muted);font-size:13px;margin-top:6px;display:block">Format: 08xxxx atau +628xxxx</small>
+</div>
+<input type="hidden" id="wa-teks" value="${esc(strukTeks)}">
+<button class="btn btn--p btn-submit" style="min-height:52px" type="submit">${ic('wa')} Buka WhatsApp &amp; Kirim</button>
+</form>
+<button class="btn" style="width:100%;margin-top:var(--s2)" onclick="tutupAuth()">Batal</button>`);
+},
 'salin-struk':b=>{const teks=b.dataset.text||'';navigator.clipboard.writeText(teks).then(()=>toast('Struk disalin ke clipboard!')).catch(()=>toast('Gagal menyalin. Coba lagi.'))},
 /* ===== RIWAYAT: filter tanggal ===== */
 'rwyt-hari-ini':()=>{const today=new Date().toISOString().slice(0,10);S.rwytDate=today;S.rwytDateEnd=today;render()},
@@ -1073,6 +1166,22 @@ apiKasbonBayar(pid,jml,catatan)
     toast(res.sisa<=0?esc(S.kasbon.find(x=>x.id===pid)?.nama||'')+' sudah lunas!':'Pembayaran '+rp(jml)+' dicatat. Sisa: '+rp(res.sisa));
     if(S.view==='kasbon')render()})
   .catch(err=>{toast('Gagal: '+err.message);btn.disabled=false;btn.textContent='Simpan Pembayaran'});
+return}
+/* ===== FORM KIRIM STRUK WA ===== */
+if(f.id==='form-wa-kirim'){e.preventDefault();
+const nomor=$('#wa-nomor').value.trim().replace(/\s+/g,'');
+const teks=$('#wa-teks').value;
+/* Validasi: minimal 10 digit angka */
+const nomorBersih=nomor.replace(/[^0-9+]/g,'');
+if(nomorBersih.length<10){$('#wa-nomor').closest('.form-group').classList.add('error');return}
+/* Normalisasi ke format internasional 62xxx */
+let nomorIntl=nomorBersih;
+if(nomorIntl.startsWith('0'))nomorIntl='62'+nomorIntl.slice(1);
+else if(nomorIntl.startsWith('+'))nomorIntl=nomorIntl.slice(1);
+const waUrl=`https://wa.me/${nomorIntl}?text=${encodeURIComponent(teks)}`;
+window.open(waUrl,'_blank','noopener,noreferrer');
+tutupAuth();
+toast('Membuka WhatsApp ke '+nomor+'…');
 return}
 /* ===== FORM PRODUK ===== */
 if(f.id!=='pform')return;e.preventDefault();let ok=true;
