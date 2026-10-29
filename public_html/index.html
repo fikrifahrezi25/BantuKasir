@@ -919,7 +919,7 @@ cart:()=>cartSheet(),
 'dec-cart':b=>{const key=b.dataset.key;const q=(S.cart[key]||0)-1;if(q<=0)delete S.cart[key];else S.cart[key]=q;cartSheet();refreshKasir()},
 kat:b=>{S.kat=b.dataset.k;render()},per:b=>{S.per=+b.dataset.d;render()},
 metode:b=>{S.metode=b.dataset.k;cartSheet()},quick:b=>{S.terima=+b.dataset.n;cartSheet()},
-save:()=>{const t=total(),items=Object.entries(S.cart).map(([key,q])=>{let p,vIdx,itemData;if(key.includes('_')){const [pid,vi]=key.split('_');p=S.prod.find(x=>x.id==pid);vIdx=+vi;p.v[vIdx].s-=q;itemData={id:p.id,n:`${p.n} (${p.v[vIdx].n})`,p:p.v[vIdx].p,c:p.v[vIdx].c,q,vi:vIdx}}else{p=S.prod.find(x=>x.id==key);p.s-=q;itemData={id:p.id,n:p.n,p:p.p,c:p.c,q}}return itemData});const now=Date.now();const trxId='TRX-'+String(now).slice(-8).toUpperCase();const sale={day:DAY,ts:now,id:trxId,items,metode:S.metode,kasir:S.usaha,void:false};S.sales.push(sale);const savedCart={...S.cart};S.cart={};S.terima=0;save();closeSheet();refreshKasir();
+save:()=>{const t=total(),items=Object.entries(S.cart).map(([key,q])=>{let p,vIdx,itemData;if(key.includes('_')){const [pid,vi]=key.split('_');p=S.prod.find(x=>x.id==pid);vIdx=+vi;p.v[vIdx].s-=q;itemData={id:p.id,n:`${p.n} (${p.v[vIdx].n})`,p:p.v[vIdx].p,c:p.v[vIdx].c,q,vi:vIdx}}else{p=S.prod.find(x=>x.id==key);p.s-=q;itemData={id:p.id,n:p.n,p:p.p,c:p.c,q}}return itemData});const now=Date.now();const trxId='TRX-'+String(now).slice(-8).toUpperCase();const sale={day:DAY,ts:now,id:trxId,items,metode:S.metode,kasir:S.usaha,void:false};if(S.metode==='tunai'&&S.terima>0){sale.bayar=S.terima;sale.kembalian=S.terima-t}S.sales.push(sale);const savedCart={...S.cart};S.cart={};S.terima=0;save();closeSheet();refreshKasir();
 // Tunjukkan pilihan: selesai atau catat kasbon
 openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
 <div style="text-align:center;padding:var(--s3) 0 var(--s2)">
@@ -954,7 +954,9 @@ openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&
     }
     return itemData
   });
-  const sale={day:DAY,items};
+  const now=Date.now();
+  const trxId='TRX-'+String(now).slice(-8).toUpperCase();
+  const sale={day:DAY,ts:now,id:trxId,items,metode:'qris',kasir:S.usaha,void:false};
   S.sales.push(sale);
   S.cart={};
   S.terima=0;
@@ -1051,9 +1053,18 @@ demo:()=>{if(!load()){S.sales=[];seed()}enterApp(true)},
   const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
   const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
   const itemsText=s.items.map(i=>`  ${i.n} x${i.q}  ${rp(i.p*i.q)}`).join('\n');
-  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}${S.alamat?'\n'+S.alamat:''}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
+  let paymentInfo='';
+  if(s.metode==='tunai'&&s.bayar){
+    paymentInfo=`\nBayar: ${rp(s.bayar)}\nKembalian: ${rp(s.kembalian||0)}`;
+  }
+  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}${S.alamat?'\n'+S.alamat:''}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}${paymentInfo}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
   /* Bangun baris item HTML untuk struk visual */
   const itemRowsHtml=s.items.map(i=>`<tr><td style="padding:3px 0">${esc(i.n)} <span style="color:#888">×${i.q}</span></td><td style="padding:3px 0;text-align:right;white-space:nowrap">${rp(i.p*i.q)}</td></tr>`).join('');
+  let paymentRowsHtml='';
+  if(s.metode==='tunai'&&s.bayar){
+    paymentRowsHtml=`<tr class="meta"><td>Bayar</td><td style="text-align:right">${rp(s.bayar)}</td></tr>
+<tr class="meta"><td>Kembalian</td><td style="text-align:right">${rp(s.kembalian||0)}</td></tr>`;
+  }
   openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
 <h2>🧾 Preview Struk</h2>
 <p class="subtitle">Transaksi ${esc(kode)}</p>
@@ -1068,6 +1079,8 @@ demo:()=>{if(!load()){S.sales=[];seed()}enterApp(true)},
   <hr style="border:none;border-top:1px dashed #bbb;margin:8px 0">
   <div style="display:flex;justify-content:space-between;font-weight:800;font-size:15px"><span>TOTAL</span><span>${rp(tot)}</span></div>
   <div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-top:4px"><span>Pembayaran</span><span>${metLbl}</span></div>
+  ${s.metode==='tunai'&&s.bayar?`<div style="display:flex;justify-content:space-between;font-size:12px;color:#666"><span>Bayar</span><span>${rp(s.bayar)}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:#666"><span>Kembalian</span><span>${rp(s.kembalian||0)}</span></div>`:''}
   <div style="display:flex;justify-content:space-between;font-size:12px;color:#666"><span>No. Transaksi</span><span>${esc(kode)}</span></div>
   <div style="text-align:center;font-size:12px;color:#888;margin-top:12px">Terima kasih sudah belanja! 🙏</div>
 </div>
@@ -1093,6 +1106,11 @@ demo:()=>{if(!load()){S.sales=[];seed()}enterApp(true)},
   const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
   const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
   const itemRowsHtml=s.items.map(i=>`<tr><td style="padding:4px 0">${esc(i.n)} ×${i.q}</td><td style="padding:4px 0;text-align:right;white-space:nowrap">${rp(i.p*i.q)}</td></tr>`).join('');
+  let paymentRowsHtml='';
+  if(s.metode==='tunai'&&s.bayar){
+    paymentRowsHtml=`<tr class="meta"><td>Bayar</td><td style="text-align:right">${rp(s.bayar)}</td></tr>
+<tr class="meta"><td>Kembalian</td><td style="text-align:right">${rp(s.kembalian||0)}</td></tr>`;
+  }
   const printWin=window.open('','_blank','width=400,height=600');
   if(!printWin){toast('Izinkan popup untuk mencetak struk');return}
   printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Struk - ${esc(kode)}</title>
@@ -1116,6 +1134,7 @@ ${S.alamat?`<div class="sub" style="margin-bottom:4px">${esc(S.alamat)}</div>`:'
 <hr>
 <table><tr class="total-row"><td>TOTAL</td><td style="text-align:right">${rp(tot)}</td></tr>
 <tr class="meta"><td>Pembayaran</td><td style="text-align:right">${metLbl}</td></tr>
+${paymentRowsHtml}
 <tr class="meta"><td>No. Transaksi</td><td style="text-align:right">${esc(kode)}</td></tr></table>
 <div class="footer">Terima kasih sudah belanja! 🙏</div>
 </body></html>`);
@@ -1136,7 +1155,11 @@ ${S.alamat?`<div class="sub" style="margin-bottom:4px">${esc(S.alamat)}</div>`:'
   const tot=s.items.reduce((t,i)=>t+i.p*i.q,0);
   const metLbl=s.metode==='qris'?'Non-Tunai (QRIS)':'Tunai';
   const itemsText=s.items.map(i=>`  ${i.n} x${i.q}  ${rp(i.p*i.q)}`).join('\n');
-  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}${S.alamat?'\n'+S.alamat:''}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
+  let paymentInfo='';
+  if(s.metode==='tunai'&&s.bayar){
+    paymentInfo=`\nBayar: ${rp(s.bayar)}\nKembalian: ${rp(s.kembalian||0)}`;
+  }
+  const strukTeks=`🧾 *STRUK BELANJA*\n${S.usaha}${S.alamat?'\n'+S.alamat:''}\n${'─'.repeat(30)}\n${itemsText}\n${'─'.repeat(30)}\n*Total: ${rp(tot)}*\nPembayaran: ${metLbl}${paymentInfo}\nKasir: ${S.usaha}\nTanggal: ${tgl} ${jam}\nNo. Transaksi: ${kode}\n\nTerima kasih sudah belanja! 🙏`;
   openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button>
 <h2>${ic('wa')} Kirim via WhatsApp</h2>
 <p class="subtitle">Masukkan nomor WA tujuan pelanggan</p>
