@@ -286,6 +286,14 @@ nav.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-tem
 .rwyt-filter label{font:600 14px var(--fb);color:var(--muted);flex:none}
 .rwyt-filter input[type=date]{min-height:44px;padding:0 12px;border:2px solid var(--line);border-radius:var(--r2);background:var(--card);color:var(--ink);font:15px var(--fb);flex:1;min-width:130px}
 .rwyt-filter input[type=date]:focus{outline:none;border-color:var(--brand)}
+.rwyt-controls{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;margin:0 0 var(--s3)}
+.rwyt-controls input[type=search]{min-height:44px;padding:0 var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--card);color:var(--ink);font:15px var(--fb)}
+.rwyt-controls input[type=search]:focus{outline:none;border-color:var(--brand)}
+.rwyt-controls input[type=search]::placeholder{color:var(--muted)}
+.rwyt-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--s2);margin:var(--s3) 0;padding:var(--s3);border:2px solid var(--line);border-radius:var(--r2);background:var(--card)}
+.rwyt-sum-item{text-align:center}
+.rwyt-sum-item .lbl-s{font-size:13px;color:var(--muted);margin-bottom:4px}
+.rwyt-sum-item .val-s{font:700 20px var(--fh);color:var(--ink)}
 .rwyt-empty{display:grid;justify-items:center;gap:var(--s2);text-align:center;color:var(--muted);padding:var(--s5) var(--s3)}
 .trx-card{border:1px solid var(--line);border-radius:var(--r2);background:var(--card);margin-bottom:var(--s2);overflow:hidden;transition:box-shadow var(--t)}
 .trx-card:hover{box-shadow:var(--sh1)}
@@ -307,10 +315,6 @@ nav.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-tem
 .trx-actions .btn{flex:1;min-height:40px;font-size:13px;justify-content:center}
 .trx-void-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(179,54,27,.08);border-radius:var(--r2);pointer-events:none}
 .trx-void-stamp{font:800 18px var(--fh);color:var(--bad);border:3px solid var(--bad);padding:4px 14px;border-radius:8px;letter-spacing:.1em;transform:rotate(-12deg);opacity:.7}
-.rwyt-sum{display:flex;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s3)}
-.rwyt-sum-item{flex:1;min-width:100px;padding:var(--s2) var(--s3);border-radius:var(--r2);background:var(--card);border:1px solid var(--line)}
-.rwyt-sum-item .lbl-s{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-.rwyt-sum-item .val-s{font:700 18px var(--fh);color:var(--ink)}
 .trx-card.is-void{opacity:.55}
 @media (min-width:768px){
 .container{padding:0 max(var(--s5),env(safe-area-inset-left))}
@@ -526,7 +530,7 @@ const VIEWS=['home','kasir','produk','laporan','riwayat','kasbon','set'];
 let tempFoto='';let tempVariants=[];
 /* DATA CONTOH: ganti dengan data dari backend */
 const SEED=[[1,'Kopi Hitam','Minuman',5000,1800,40,''],[2,'Kopi Susu','Minuman',8000,3200,30,''],[3,'Es Teh Manis','Minuman',5000,1500,25,''],[4,'Air Mineral','Minuman',4000,2500,12,''],[5,'Nasi Goreng','Makanan',15000,8000,4,''],[6,'Mie Telur','Makanan',12000,6500,18,''],[7,'Roti Bakar','Makanan',10000,4500,3,''],[8,'Gorengan','Camilan',1000,500,60,''],[9,'Keripik','Camilan',3000,1800,22,'']];
-const S={prod:SEED.map(([id,n,k,p,c,s,f])=>({id,n,k,p,c,s,f:f||'',v:[]})),sales:[],cart:{},kat:'Semua',q:'',per:7,tema:'auto',usaha:'Warung Kopi Bu Rina',alamat:'',pajak:false,view:'home',metode:'tunai',terima:0,load:false,kats:[...KATS_DEFAULT],kasbon:[],qris:'',rwytDate:new Date().toISOString().slice(0,10),rwytDateEnd:new Date().toISOString().slice(0,10)};
+const S={prod:SEED.map(([id,n,k,p,c,s,f])=>({id,n,k,p,c,s,f:f||'',v:[]})),sales:[],cart:{},kat:'Semua',q:'',per:7,tema:'auto',usaha:'Warung Kopi Bu Rina',alamat:'',pajak:false,view:'home',metode:'tunai',terima:0,load:false,kats:[...KATS_DEFAULT],kasbon:[],qris:'',rwytDate:new Date().toISOString().slice(0,10),rwytDateEnd:new Date().toISOString().slice(0,10),rwytSearch:'',rwytMetode:'all'};
 function seed(){
 // Tambah varian ke beberapa produk contoh
 const kopi=S.prod.find(p=>p.id===1);
@@ -543,8 +547,8 @@ for(let d=0;d<30;d++){
     S.sales.push({day:DAY-d,ts,id:'TRX-'+String(Date.now()-d*1e7-tx*1e6).slice(-8).toUpperCase(),items,metode:metodes[(d+tx)%metodes.length],kasir:S.usaha,void:false})
   }
 }}
-function load(){try{const j=JSON.parse(localStorage.getItem('uk1'));if(j){if(!j.kats)j.kats=[...KATS_DEFAULT];if(!j.kasbon)j.kasbon=[];if(!j.qris)j.qris='';if(!j.alamat)j.alamat='';if(!j.rwytDate)j.rwytDate=new Date().toISOString().slice(0,10);if(!j.rwytDateEnd)j.rwytDateEnd=new Date().toISOString().slice(0,10);Object.assign(S,j);return true}}catch(e){}return false}
-function save(){try{const{prod,sales,tema,usaha,alamat,pajak,kats,kasbon,qris,rwytDate,rwytDateEnd}=S;localStorage.setItem('uk1',JSON.stringify({prod,sales,tema,usaha,alamat,pajak,kats,kasbon,qris,rwytDate,rwytDateEnd}))}catch(e){}}
+function load(){try{const j=JSON.parse(localStorage.getItem('uk1'));if(j){if(!j.kats)j.kats=[...KATS_DEFAULT];if(!j.kasbon)j.kasbon=[];if(!j.qris)j.qris='';if(!j.alamat)j.alamat='';if(!j.rwytDate)j.rwytDate=new Date().toISOString().slice(0,10);if(!j.rwytDateEnd)j.rwytDateEnd=new Date().toISOString().slice(0,10);if(!j.rwytSearch)j.rwytSearch='';if(!j.rwytMetode)j.rwytMetode='all';Object.assign(S,j);return true}}catch(e){}return false}
+function save(){try{const{prod,sales,tema,usaha,alamat,pajak,kats,kasbon,qris,rwytDate,rwytDateEnd,rwytSearch,rwytMetode}=S;localStorage.setItem('uk1',JSON.stringify({prod,sales,tema,usaha,alamat,pajak,kats,kasbon,qris,rwytDate,rwytDateEnd,rwytSearch,rwytMetode}))}catch(e){}}
 function hitung(days){let m=0,c=0;const per={};S.sales.forEach(s=>{if(!s.void&&DAY-s.day<days)s.items.forEach(i=>{m+=i.p*i.q;c+=i.c*i.q;const r=per[i.id]=per[i.id]||{n:i.n,q:0,m:0,u:0};r.q+=i.q;r.m+=i.p*i.q;r.u+=(i.p-i.c)*i.q})});const k=EXP*days;return{m,c,k,u:m-c-k,per:Object.values(per).sort((a,b)=>b.u-a.u)}}
 /* Fungsi untuk mendeteksi produk best seller berdasarkan jumlah terjual */
 function getBestSellers(days=7){const sold={};S.sales.forEach(s=>{if(!s.void&&DAY-s.day<days)s.items.forEach(i=>{const baseId=i.vi!==undefined?i.id:i.id;sold[baseId]=(sold[baseId]||0)+i.q})});const sorted=Object.entries(sold).sort((a,b)=>b[1]-a[1]);const threshold=sorted.length>0?sorted[0][1]*0.5:0;return sorted.filter(([id,qty])=>qty>=threshold&&qty>=3).map(([id])=>+id)}
@@ -629,13 +633,26 @@ const dStart=S.rwytDate||today;
 const dEnd=S.rwytDateEnd||today;
 const tsStart=new Date(dStart+'T00:00:00').getTime();
 const tsEnd=new Date(dEnd+'T23:59:59').getTime();
+const searchQuery=(S.rwytSearch||'').toLowerCase().trim();
+const metodeFilter=S.rwytMetode||'all';
 /* Filter transaksi berdasarkan tanggal */
-const filtered=S.sales.filter(s=>{
+let filtered=S.sales.filter(s=>{
   if(s.ts){return s.ts>=tsStart&&s.ts<=tsEnd}
   /* fallback: konversi day ke timestamp */
   const sTs=s.day*864e5;
   return sTs>=tsStart&&sTs<=tsEnd
 }).sort((a,b)=>(b.ts||b.day*864e5)-(a.ts||a.day*864e5));
+/* Filter berdasarkan metode pembayaran */
+if(metodeFilter!=='all'){
+  filtered=filtered.filter(s=>s.metode===metodeFilter);
+}
+/* Filter berdasarkan No. Transaksi */
+if(searchQuery){
+  filtered=filtered.filter(s=>{
+    const kode=(s.id||('TRX-'+String((s.ts||s.day*864e5)).slice(-6))).toLowerCase();
+    return kode.includes(searchQuery);
+  });
+}
 const aktif=filtered.filter(s=>!s.void);
 const totalMasuk=aktif.reduce((sum,s)=>sum+s.items.reduce((t,i)=>t+i.p*i.q,0),0);
 const totalTrx=aktif.length;
@@ -668,7 +685,7 @@ const trxCards=filtered.length?filtered.map((s,idx)=>{
     ${!s.void?`<button class="btn" style="color:var(--bad);border-color:var(--bad)" data-act="void-trx" data-idx="${S.sales.indexOf(s)}">${ic('void')} Batalkan</button>`:'<span style="font-size:13px;color:var(--bad);padding:8px 4px">⚠️ Transaksi dibatalkan</span>'}
     <button class="btn" data-act="share-struk" data-idx="${S.sales.indexOf(s)}">${ic('bag')} Cetak Struk</button>
   </div>
-</div>`}).join(''):`<div class="rwyt-empty">${ic('history')}<b>Tidak ada transaksi</b><span>Tidak ada transaksi pada rentang tanggal ini.</span></div>`;
+</div>`}).join(''):`<div class="rwyt-empty">${ic('history')}<b>Tidak ada transaksi</b><span>Tidak ada transaksi${searchQuery?' yang cocok dengan pencarian':' pada rentang tanggal ini'}.</span></div>`;
 return `<h1>Riwayat Transaksi</h1>
 <div class="rwyt-filter">
   <label>Dari</label>
@@ -677,6 +694,14 @@ return `<h1>Riwayat Transaksi</h1>
   <input type="date" data-in="rwyt-end" value="${dEnd}" max="${today}">
   <button class="btn" data-act="rwyt-hari-ini" style="min-height:44px;padding:0 var(--s3);font-size:14px">Hari ini</button>
   <button class="btn" data-act="rwyt-7hari" style="min-height:44px;padding:0 var(--s3);font-size:14px">7 hari</button>
+</div>
+<div class="rwyt-controls">
+  <input type="search" class="fld" data-in="rwyt-search" value="${esc(S.rwytSearch||'')}" placeholder="🔍 Cari No. Transaksi (contoh: TRX-123456)" style="flex:1">
+  <div class="seg" role="group" aria-label="Filter Metode Pembayaran" style="flex:none">
+    <button data-act="rwyt-metode" data-k="all" aria-pressed="${metodeFilter==='all'}">All</button>
+    <button data-act="rwyt-metode" data-k="tunai" aria-pressed="${metodeFilter==='tunai'}">Tunai</button>
+    <button data-act="rwyt-metode" data-k="qris" aria-pressed="${metodeFilter==='qris'}">QRIS</button>
+  </div>
 </div>
 ${filtered.length?`<div class="rwyt-sum">
   <div class="rwyt-sum-item"><div class="lbl-s">Transaksi</div><div class="val-s">${totalTrx}</div></div>
@@ -1127,13 +1152,15 @@ ${S.alamat?`<div class="sub" style="margin-bottom:4px">${esc(S.alamat)}</div>`:'
 },
 'salin-struk':b=>{const teks=b.dataset.text||'';navigator.clipboard.writeText(teks).then(()=>toast('Struk disalin ke clipboard!')).catch(()=>toast('Gagal menyalin. Coba lagi.'))},
 /* ===== RIWAYAT: filter tanggal ===== */
-'rwyt-hari-ini':()=>{const today=new Date().toISOString().slice(0,10);S.rwytDate=today;S.rwytDateEnd=today;render()},
-'rwyt-7hari':()=>{const today=new Date();const d7=new Date(today);d7.setDate(d7.getDate()-6);S.rwytDate=d7.toISOString().slice(0,10);S.rwytDateEnd=today.toISOString().slice(0,10);render()}};
+'rwyt-hari-ini':()=>{const today=new Date().toISOString().slice(0,10);S.rwytDate=today;S.rwytDateEnd=today;save();render()},
+'rwyt-7hari':()=>{const today=new Date();const d7=new Date(today);d7.setDate(d7.getDate()-6);S.rwytDate=d7.toISOString().slice(0,10);S.rwytDateEnd=today.toISOString().slice(0,10);save();render()},
+'rwyt-metode':b=>{S.rwytMetode=b.dataset.k;save();render()}};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&A[b.dataset.act])A[b.dataset.act](b)});
 let dt;document.addEventListener('input',e=>{const k=e.target.dataset.in;if(!k)return;const v=e.target.value;
 if(k==='terima'){S.terima=+v.replace(/\D/g,'')||0;cekBayar()}
-else if(k==='rwyt-start'){S.rwytDate=v;if(S.view==='riwayat'){clearTimeout(dt);dt=setTimeout(()=>render(),100)}}
-else if(k==='rwyt-end'){S.rwytDateEnd=v;if(S.view==='riwayat'){clearTimeout(dt);dt=setTimeout(()=>render(),100)}}
+else if(k==='rwyt-start'){S.rwytDate=v;save();if(S.view==='riwayat'){clearTimeout(dt);dt=setTimeout(()=>render(),100)}}
+else if(k==='rwyt-end'){S.rwytDateEnd=v;save();if(S.view==='riwayat'){clearTimeout(dt);dt=setTimeout(()=>render(),100)}}
+else if(k==='rwyt-search'){S.rwytSearch=v;save();if(S.view==='riwayat'){clearTimeout(dt);dt=setTimeout(()=>render(),300)}}
 else if(k==='cari'||k==='cari2'){S.q=v;clearTimeout(dt);dt=setTimeout(()=>{if(k==='cari')refreshKasir();else $('#plist').innerHTML=plist(S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase())))},150)}
 else if(k==='usaha'){S.usaha=v;$('#h-usaha').textContent=v||'Usaha Saya';save()}
 else if(k==='alamat'){S.alamat=v;save()}
