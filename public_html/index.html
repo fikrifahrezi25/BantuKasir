@@ -687,7 +687,8 @@ openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&
 <div class="form-group"><label for="pf-s">Stok</label><input id="pf-s" inputmode="numeric" value="${p.s||''}" data-raw="${p.s||''}" required><div class="form-error">Isi stok</div></div>
 <div class="kemb" id="marg"></div>
 </div>
-<button class="btn btn--p btn-submit" type="submit">Simpan</button></form>`);
+<button class="btn btn--p btn-submit" type="submit">Simpan</button>
+${id?`<button class="btn" type="button" style="margin-top:var(--s2);width:100%;border-color:var(--bad);color:var(--bad)" data-act="hapus-produk" data-id="${id}">${ic('x')} Hapus Produk</button>`:''}</form>`);
 margin();updateFotoPreview();renderVariantList()}
 function margin(){const p=+($('#pf-p').dataset.raw||$('#pf-p').value.replace(/\D/g,''))||0,c=+($('#pf-c').dataset.raw||$('#pf-c').value.replace(/\D/g,''))||0,m=$('#marg');const u=p-c;m.textContent=p?`Untung tiap terjual: ${rp(u)} (${Math.round(u/p*100)}%)`:'Isi harga jual dan modal untuk melihat untung.';m.style.background=u<0?'var(--bad-bg)':''}
 /* Fungsi render daftar varian */
@@ -819,6 +820,8 @@ openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&
   catch(e){toast('Gagal: '+e.message);btn.disabled=false;btn.textContent='Hapus Data Kasbon Ini'}},
 'ci-quick':b=>{const input=$('#ci-jml');const n=b.dataset.n;const formatted=parseInt(n,10).toLocaleString('id-ID');input.value=formatted;input.dataset.raw=n},
 new:()=>produkForm(),edit:b=>produkForm(b.dataset.id),
+'hapus-produk':b=>{const id=b.dataset.id;const p=S.prod.find(x=>x.id==id);if(!p)return;openSheet(`<button class="auth-close" onclick="tutupAuth()" aria-label="Tutup">&times;</button><div style="text-align:center;padding:var(--s3) 0"><div style="width:64px;height:64px;border-radius:50%;background:var(--bad-bg);display:flex;align-items:center;justify-content:center;margin:0 auto var(--s3);color:var(--bad)">${ic('warn','')}</div><h2 style="margin-bottom:var(--s2)">Hapus Produk?</h2><p style="color:var(--muted);margin-bottom:var(--s4)">Produk <b style="color:var(--ink)">${esc(p.n)}</b> akan dihapus permanen dari katalog. Tindakan ini tidak bisa dibatalkan.</p></div><div style="display:grid;gap:var(--s2)"><button class="btn" style="min-height:52px;background:var(--bad);border-color:var(--bad);color:#fff" data-act="konfirm-hapus" data-id="${id}">${ic('x')} Ya, Hapus Produk</button><button class="btn btn--p" style="min-height:52px" onclick="tutupAuth()">Batal</button></div>`)},
+'konfirm-hapus':b=>{const id=b.dataset.id;const idx=S.prod.findIndex(x=>x.id==id);if(idx===-1)return;const nama=S.prod[idx].n;S.prod.splice(idx,1);Object.keys(S.cart).forEach(key=>{if(key==id||key.startsWith(id+'_'))delete S.cart[key]});save();closeSheet();toast('✓ '+esc(nama)+' dihapus dari katalog');if(S.view==='kasir')refreshKasir();else if(S.view==='produk')render()},
 'belanja-list':()=>belanjaSheet(),
 'belanja-share':b=>{const teks=b.dataset.text||'';if(navigator.share){navigator.share({title:'Daftar Belanja Stok',text:teks}).catch(()=>{})}else{navigator.clipboard.writeText(teks).then(()=>toast('Daftar belanja disalin!')).catch(()=>{const wa=`https://wa.me/?text=${encodeURIComponent(teks)}`;window.open(wa,'_blank')})}},
 'change-foto':()=>{const input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=e=>handleFotoUpload(e);input.click()},
