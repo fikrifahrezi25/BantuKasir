@@ -61,6 +61,7 @@ function getUserEntry(filename, userId) {
     if (filename === "database_laporan.json") entry.laporan = [];
     if (filename === "database_riwayat_transaksi.json") entry.transaksi = [];
     if (filename === "database_kasbon.json") entry.kasbon = [];
+    if (filename === "database_orders.json") entry.orders = [];
     db.push(entry);
     simpanDatabase(filename, db);
   }
@@ -96,6 +97,10 @@ app.get("/", (req, res, next) => {
 // ===== ROUTING HALAMAN =====
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "public_html", "dashboard.html"));
+});
+
+app.get("/order", (req, res) => {
+  res.sendFile(path.join(__dirname, "public_html", "order.html"));
 });
 
 // ===== AUTH ENDPOINTS =====
@@ -264,8 +269,70 @@ app.post("/api/transaksi", (req, res) => {
   if (!transaksi) return res.status(400).json({ success: false, message: "data transaksi wajib diisi" });
   const { db, entry } = getUserEntry("database_riwayat_transaksi.json", user_id);
   if (!entry.transaksi) entry.transaksi = [];
+  
+  // IDEMPOTENT CHECK: Check if transaction with this ID already exists
+  if (transaksi.id) {
+    const existingTransaction = entry.transaksi.find(t => t.id === transaksi.id);
+    if (existingTransaction) {
+      console.log(`[Transaksi] Duplicate transaction ID detected: ${transaksi.id}, returning existing`);
+      return res.json({ 
+        success: true, 
+        message: "Transaksi sudah ada (duplicate prevented)",
+        transaksi: existingTransaction,
+        duplicate: true
+      });
+    }
+  }
+  
+  // Calculate day from timestamp if provided
+  if (transaksi.timestamp && !transaksi.day) {
+    transaksi.day = Math.floor(transaksi.timestamp / 864e5);
+  }
+  
   entry.transaksi.push(transaksi);
   saveUserEntry("database_riwayat_transaksi.json", db);
+  
+  // Update stock dengan safety check untuk prevent negative stock
+  if (transaksi.items && Array.isArray(transaksi.items)) {
+    const dbProd = bacaDatabase("database_produk.json");
+    const { entry: entryProd } = getUserEntry("database_produk.json", user_id);
+    let stockWarnings = [];
+    
+    transaksi.items.forEach(item => {
+      const prod = entryProd.produk.find(p => p.id === item.id);
+      if (!prod) return;
+      
+      if (item.vi !== undefined && prod.v && prod.v[item.vi]) {
+        // Variant product
+        const newStock = prod.v[item.vi].s - item.q;
+        prod.v[item.vi].s = Math.max(0, newStock);
+        if (newStock < 0) {
+          stockWarnings.push(`${prod.n} (${prod.v[item.vi].n}) stok kurang`);
+        }
+      } else {
+        // Regular product
+        const newStock = prod.s - item.q;
+        prod.s = Math.max(0, newStock);
+        if (newStock < 0) {
+          stockWarnings.push(`${prod.n} stok kurang`);
+        }
+      }
+    });
+    
+    saveUserEntry("database_produk.json", dbProd);
+    
+    if (stockWarnings.length > 0) {
+      console.log(`[Transaksi] Stock warnings: ${stockWarnings.join(', ')}`);
+    }
+    
+    return res.json({ 
+      success: true, 
+      message: "Transaksi disimpan", 
+      transaksi,
+      stockWarnings: stockWarnings.length > 0 ? stockWarnings : undefined
+    });
+  }
+  
   res.json({ success: true, message: "Transaksi disimpan", transaksi });
 });
 
@@ -564,7 +631,6 @@ app.get("/api/product-photo", (req, res) => {
   });
 });
 
-<<<<<<< HEAD
 // ===== INSIGHT AI ENDPOINT =====
 app.post("/api/insight", async (req, res) => {
   try {
@@ -983,8 +1049,11 @@ app.get("/api/insight", async (req, res) => {
   }
 });
 
-=======
->>>>>>> e8b2c41e5c9c6cbbd8f2c55f11a49ff6854a5782
+// ===== HEALTH CHECK ENDPOINT =====
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, status: "online", timestamp: Date.now() });
+});
+
 // ===== AI VOICE-TO-ORDER ENDPOINT =====
 app.post("/api/voice-order", async (req, res) => {
   try {
@@ -1088,6 +1157,452 @@ Aturan:
   }
 });
 
+// ===== ORDER SYSTEM ENDPOINTS =====
+
+// GET /api/order-settings?user_id=xxx - Get order settings untuk kasir
+app.get("/api/order-settings", (req, res) => {
+  try {
+    const { user_id } = req.query;
+    if (!user_id) return res.status(400).json({ success: false, message: "user_id wajib diisi" });
+    
+    const { db, entry } = getUserEntry("database_order_settings.json", user_id);
+    
+    // Jika belum ada settings, buat default
+    if (!entry.toko_id) {
+      entry.toko_id = generateTokoId();
+      entry.order_enabled = false;
+      entry.order_url = `http://localhost:${PORT}/order?toko=${entry.toko_id}`;
+      entry.qr_code_base64 = null;
+      saveUserEntry("database_order_settings.json", db);
+    }
+    
+    res.json({
+      success: true,
+      settings: {
+        toko_id: entry.toko_id,
+        order_enabled: entry.order_enabled || false,
+        order_url: entry.order_url,
+        qr_code_base64: entry.qr_code_base64
+      }
+    });
+  } catch (err) {
+    console.error("[Order Settings] GET error:", err);
+    res.status(500).json({ success: false, message: "Gagal mengambil pengaturan order" });
+  }
+});
+
+// POST /api/order-settings - Generate/regenerate toko_id
+app.post("/api/order-settings", (req, res) => {
+  try {
+    const { user_id, regenerate, order_enabled, qr_code_base64 } = req.body;
+    if (!user_id) return res.status(400).json({ success: false, message: "user_id wajib diisi" });
+    
+    const { db, entry } = getUserEntry("database_order_settings.json", user_id);
+    
+    if (regenerate) {
+      entry.toko_id = generateTokoId();
+      entry.order_url = `http://localhost:${PORT}/order?toko=${entry.toko_id}`;
+      entry.qr_code_base64 = null; // Reset QR code
+    }
+    
+    if (order_enabled !== undefined) {
+      entry.order_enabled = order_enabled;
+    }
+    
+    if (qr_code_base64) {
+      entry.qr_code_base64 = qr_code_base64;
+    }
+    
+    saveUserEntry("database_order_settings.json", db);
+    
+    res.json({
+      success: true,
+      message: regenerate ? "Toko ID berhasil di-generate ulang" : "Pengaturan order disimpan",
+      settings: {
+        toko_id: entry.toko_id,
+        order_enabled: entry.order_enabled,
+        order_url: entry.order_url,
+        qr_code_base64: entry.qr_code_base64
+      }
+    });
+  } catch (err) {
+    console.error("[Order Settings] POST error:", err);
+    res.status(500).json({ success: false, message: "Gagal menyimpan pengaturan order" });
+  }
+});
+
+// GET /api/menu?toko={toko_id} - Public endpoint untuk customer (no auth)
+app.get("/api/menu", (req, res) => {
+  try {
+    const { toko } = req.query;
+    if (!toko) return res.status(400).json({ success: false, message: "Parameter toko wajib diisi" });
+    
+    // Cari user_id dari toko_id
+    const orderSettings = bacaDatabase("database_order_settings.json");
+    const setting = orderSettings.find(s => s.toko_id === toko);
+    
+    if (!setting) {
+      return res.status(404).json({ success: false, message: "Toko tidak ditemukan" });
+    }
+    
+    if (!setting.order_enabled) {
+      return res.status(403).json({ success: false, message: "Order untuk toko ini belum diaktifkan" });
+    }
+    
+    const user_id = setting.user_id;
+    
+    // Ambil data user untuk nama usaha
+    const users = bacaDatabase("database_user.json");
+    const user = users.find(u => u.id === user_id);
+    
+    // Ambil produk yang stocknya > 0
+    const { entry } = getUserEntry("database_produk.json", user_id);
+    const produkAktif = (entry.produk || []).filter(p => {
+      if (p.v && p.v.length > 0) {
+        // Produk dengan varian, cek minimal 1 varian ada stok
+        return p.v.some(v => v.s > 0);
+      }
+      // Produk tanpa varian
+      return p.s > 0;
+    });
+    
+    res.json({
+      success: true,
+      toko: {
+        nama: user?.nama_usaha || "Warung",
+        alamat: user?.alamat_usaha || ""
+      },
+      produk: produkAktif
+    });
+  } catch (err) {
+    console.error("[Menu] GET error:", err);
+    res.status(500).json({ success: false, message: "Gagal mengambil menu" });
+  }
+});
+
+// POST /api/orders - Customer submit order
+app.post("/api/orders", (req, res) => {
+  try {
+    const { toko_id, customer_name, items } = req.body;
+    
+    if (!toko_id) return res.status(400).json({ success: false, message: "toko_id wajib diisi" });
+    if (!customer_name || !customer_name.trim()) {
+      return res.status(400).json({ success: false, message: "Nama pelanggan wajib diisi" });
+    }
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: "Items tidak boleh kosong" });
+    }
+    
+    // Cari user_id dari toko_id
+    const orderSettings = bacaDatabase("database_order_settings.json");
+    const setting = orderSettings.find(s => s.toko_id === toko_id);
+    
+    if (!setting) {
+      return res.status(404).json({ success: false, message: "Toko tidak ditemukan" });
+    }
+    
+    if (!setting.order_enabled) {
+      return res.status(403).json({ success: false, message: "Order untuk toko ini belum diaktifkan" });
+    }
+    
+    const user_id = setting.user_id;
+    
+    // Hitung subtotal
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // Generate order ID dan nomor pesanan
+    const timestamp = Date.now();
+    const order_id = `order_${timestamp}`;
+    const order_number = Math.floor(Math.random() * 999) + 1; // Random 1-999
+    
+    const newOrder = {
+      order_id,
+      order_number,
+      customer_name: customer_name.trim(),
+      items,
+      subtotal,
+      status: "pending",
+      created_at: timestamp,
+      payment_method: null,
+      processed_by: null
+    };
+    
+    // Simpan order
+    const { db, entry } = getUserEntry("database_orders.json", user_id);
+    if (!entry.orders) entry.orders = [];
+    entry.orders.push(newOrder);
+    saveUserEntry("database_orders.json", db);
+    
+    console.log(`[Order] New order #${order_number} from ${customer_name} (${order_id})`);
+    
+    res.json({
+      success: true,
+      message: "Pesanan berhasil dikirim",
+      order: newOrder
+    });
+  } catch (err) {
+    console.error("[Order] POST error:", err);
+    res.status(500).json({ success: false, message: "Gagal menyimpan pesanan" });
+  }
+});
+
+// GET /api/orders?user_id=xxx&status=pending - Kasir fetch orders
+app.get("/api/orders", (req, res) => {
+  try {
+    const { user_id, status } = req.query;
+    if (!user_id) return res.status(400).json({ success: false, message: "user_id wajib diisi" });
+    
+    const { entry } = getUserEntry("database_orders.json", user_id);
+    let orders = entry.orders || [];
+    
+    // Filter by status jika ada
+    if (status) {
+      orders = orders.filter(o => o.status === status);
+    }
+    
+    // Sort by created_at ASCENDING for pending (oldest first = FIFO)
+    // Sort by processed_at/created_at DESCENDING for paid (newest first)
+    if (status === 'pending') {
+      orders.sort((a, b) => a.created_at - b.created_at); // OLDEST FIRST
+    } else {
+      orders.sort((a, b) => (b.processed_at || b.created_at) - (a.processed_at || a.created_at));
+    }
+    
+    res.json({
+      success: true,
+      orders
+    });
+  } catch (err) {
+    console.error("[Orders] GET error:", err);
+    res.status(500).json({ success: false, message: "Gagal mengambil pesanan" });
+  }
+});
+
+// GET /api/orders/:order_id?user_id=xxx atau ?toko_id=xxx - Get single order
+app.get("/api/orders/:order_id", (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const { user_id, toko_id } = req.query;
+    
+    console.log(`[Orders] GET request - order_id: ${order_id}, user_id: ${user_id}, toko_id: ${toko_id}`);
+    
+    let userId = user_id;
+    
+    // If customer polling via toko_id, convert to user_id
+    if (!userId && toko_id) {
+      const orderSettings = bacaDatabase("database_order_settings.json");
+      console.log('[Orders] Order settings:', JSON.stringify(orderSettings));
+      
+      const found = orderSettings.find(settings => settings.toko_id === toko_id);
+      
+      if (found) {
+        userId = found.user_id;
+        console.log(`[Orders] Converted toko_id ${toko_id} to user_id ${userId}`);
+      } else {
+        console.log(`[Orders] ERROR: toko_id ${toko_id} not found in settings`);
+      }
+    }
+    
+    if (!userId) {
+      console.log('[Orders] ERROR: No user_id found');
+      return res.status(400).json({ success: false, message: "user_id atau toko_id wajib diisi" });
+    }
+    
+    // Force fresh read from database
+    const { entry } = getUserEntry("database_orders.json", userId);
+    
+    if (!entry.orders) {
+      entry.orders = [];
+    }
+    
+    const order = entry.orders.find(o => o.order_id === order_id);
+    
+    if (!order) {
+      console.log(`[Orders] ERROR: Order ${order_id} not found for user ${userId}`);
+      console.log(`[Orders] Available orders:`, entry.orders.map(o => o.order_id));
+      return res.status(404).json({ success: false, message: "Pesanan tidak ditemukan" });
+    }
+    
+    console.log(`[Orders] GET ${order_id} - Status: ${order.status}, Payment: ${order.payment_method || 'none'}`);
+    
+    // Prevent caching
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    res.json({
+      success: true,
+      order
+    });
+  } catch (err) {
+    console.error("[Orders] GET single error:", err);
+    res.status(500).json({ success: false, message: "Gagal mengambil pesanan" });
+  }
+});
+
+// PUT /api/orders/:order_id/process - Convert order to transaction & update stock
+app.put("/api/orders/:order_id/process", (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const { user_id, payment_method, processed_by, items, subtotal } = req.body;
+    
+    if (!user_id) return res.status(400).json({ success: false, message: "user_id wajib diisi" });
+    if (!payment_method) return res.status(400).json({ success: false, message: "payment_method wajib diisi" });
+    
+    // Update order status
+    const { db: orderDb, entry: orderEntry } = getUserEntry("database_orders.json", user_id);
+    const order = (orderEntry.orders || []).find(o => o.order_id === order_id);
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Pesanan tidak ditemukan" });
+    }
+    
+    if (order.status === "paid") {
+      return res.status(400).json({ success: false, message: "Pesanan sudah diproses" });
+    }
+    
+    // Update order dengan data final (jika kasir edit)
+    if (items) order.items = items;
+    if (subtotal !== undefined) order.subtotal = subtotal;
+    
+    order.status = "paid";
+    order.payment_method = payment_method;
+    order.processed_by = processed_by || "kasir";
+    order.processed_at = Date.now();
+    
+    console.log(`[Orders] Processing order ${order_id} - Setting status to PAID, payment method: ${payment_method}`);
+    
+    saveUserEntry("database_orders.json", orderDb);
+    
+    console.log(`[Orders] Order ${order_id} saved with status: ${order.status}`);
+    
+    // Create transaction
+    const timestamp = Date.now();
+    const day = Math.floor(timestamp / 864e5);
+    
+    // Format items untuk transaksi
+    const transactionItems = order.items.map(item => ({
+      id: item.id,
+      n: item.name,
+      p: item.price,
+      c: item.cost || 0,
+      q: item.quantity,
+      vi: item.variant_index
+    }));
+    
+    const transaction = {
+      id: `trx_${timestamp}`,
+      items: transactionItems,
+      total: order.subtotal,
+      method: payment_method,
+      timestamp,
+      day,
+      void: false,
+      from_order: order_id,
+      customer_name: order.customer_name
+    };
+    
+    // Simpan transaksi
+    const { db: trxDb, entry: trxEntry } = getUserEntry("database_riwayat_transaksi.json", user_id);
+    if (!trxEntry.transaksi) trxEntry.transaksi = [];
+    trxEntry.transaksi.push(transaction);
+    saveUserEntry("database_riwayat_transaksi.json", trxDb);
+    
+    // Update stock
+    const { db: prodDb, entry: prodEntry } = getUserEntry("database_produk.json", user_id);
+    let stockWarnings = [];
+    
+    order.items.forEach(item => {
+      const prod = (prodEntry.produk || []).find(p => p.id === item.id);
+      if (!prod) return;
+      
+      if (item.variant_index !== undefined && prod.v && prod.v[item.variant_index]) {
+        // Variant product
+        const newStock = prod.v[item.variant_index].s - item.quantity;
+        prod.v[item.variant_index].s = Math.max(0, newStock);
+        if (newStock < 0) {
+          stockWarnings.push(`${prod.n} (${prod.v[item.variant_index].n}) stok kurang`);
+        }
+      } else {
+        // Regular product
+        const newStock = prod.s - item.quantity;
+        prod.s = Math.max(0, newStock);
+        if (newStock < 0) {
+          stockWarnings.push(`${prod.n} stok kurang`);
+        }
+      }
+    });
+    
+    saveUserEntry("database_produk.json", prodDb);
+    
+    console.log(`[Order] Order #${order.order_number} processed as transaction ${transaction.id}`);
+    if (stockWarnings.length > 0) {
+      console.log(`[Order] Stock warnings: ${stockWarnings.join(', ')}`);
+    }
+    
+    res.json({
+      success: true,
+      message: "Pesanan berhasil diproses",
+      order,
+      transaction,
+      stockWarnings: stockWarnings.length > 0 ? stockWarnings : undefined
+    });
+  } catch (err) {
+    console.error("[Order] PUT process error:", err);
+    res.status(500).json({ success: false, message: "Gagal memproses pesanan" });
+  }
+});
+
+// PUT /api/orders/:order_id/cancel - Cancel order
+app.put("/api/orders/:order_id/cancel", (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const { user_id } = req.body;
+    
+    if (!user_id) return res.status(400).json({ success: false, message: "user_id wajib diisi" });
+    
+    const { db, entry } = getUserEntry("database_orders.json", user_id);
+    const order = (entry.orders || []).find(o => o.order_id === order_id);
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Pesanan tidak ditemukan" });
+    }
+    
+    if (order.status !== "pending") {
+      return res.status(400).json({ success: false, message: "Hanya pesanan pending yang bisa dibatalkan" });
+    }
+    
+    order.status = "cancelled";
+    order.cancelled_at = Date.now();
+    
+    saveUserEntry("database_orders.json", db);
+    
+    console.log(`[Order] Order #${order.order_number} cancelled`);
+    
+    res.json({
+      success: true,
+      message: "Pesanan dibatalkan",
+      order
+    });
+  } catch (err) {
+    console.error("[Order] PUT cancel error:", err);
+    res.status(500).json({ success: false, message: "Gagal membatalkan pesanan" });
+  }
+});
+
+// Helper: Generate random toko_id
+function generateTokoId() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const segments = [8, 7, 4]; // Format: xxxxxxxx-xxxxxxx-xxxx
+  return segments.map(len => {
+    let segment = '';
+    for (let i = 0; i < len; i++) {
+      segment += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return segment;
+  }).join('-');
+}
+
 // ===== JALANKAN SERVER =====
 app.listen(PORT, () => {
   console.log(`\nBantuKasir Server running at http://localhost:${PORT}`);
@@ -1111,4 +1626,12 @@ app.listen(PORT, () => {
   console.log(`  GET    /api/user/pengaturan?user_id=xxx`);
   console.log(`  PUT    /api/user/pengaturan`);
   console.log(`  POST   /api/voice-order (AI Voice-to-Order)`);
+  console.log(`  GET    /api/order-settings?user_id=xxx`);
+  console.log(`  POST   /api/order-settings`);
+  console.log(`  GET    /api/menu?toko=xxx (Public)`);
+  console.log(`  POST   /api/orders`);
+  console.log(`  GET    /api/orders?user_id=xxx`);
+  console.log(`  GET    /api/orders/:order_id?user_id=xxx`);
+  console.log(`  PUT    /api/orders/:order_id/process`);
+  console.log(`  PUT    /api/orders/:order_id/cancel`);
 });
