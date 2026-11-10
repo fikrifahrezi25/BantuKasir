@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesan - BantuKasir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* BantuKasir Theme - Nota Kas Style */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --paper: #FBF6EC;
+      --card: #fff;
+      --ink: #231A12;
+      --muted: #645647;
+      --line: #E3D8C4;
+      --brand: #17613F;
+      --on-brand: #fff;
+      --accent: #F2B134;
+      --bad: #B3361B;
+      --ok-bg: #E3F1E8;
+      --r1: 6px;
+      --r2: 12px;
+      --s2: 8px;
+      --s3: 16px;
+      --s4: 24px;
+      --fb: 'Figtree', system-ui, sans-serif;
+      --fh: 'Bricolage Grotesque', system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--fb);
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: var(--s3);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      background: var(--card);
+      padding: var(--s4);
+      border-radius: var(--r2);
+      box-shadow: 0 1px 0 rgba(35,26,18,.1);
+      margin-bottom: var(--s3);
+      text-align: center;
+      border: 1px solid var(--line);
+    }
+
+    .header h1 {
+      font-family: var(--fh);
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 800;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Search & Filter */
+    .search-section {
+      background: var(--card);
+      padding: var(--s3);
+      border-radius: var(--r2);
+      border: 1px solid var(--line);
+      margin-bottom: var(--s3);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: var(--s3);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 12px;
+      border: 2px solid var(--line);
+      border-radius: var(--r2);
+      font-size: 16px;
+      font-family: var(--fb);
+      background: var(--paper);
+      color: var(--ink);
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* Voice Button */
+    .voice-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--s2);
+      padding: 12px 20px;
+      background: var(--brand);
+      color: var(--on-brand);
+      border: none;
+      border-radius: var(--r2);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--fb);
+      width: 100%;
+      justify-content: center;
+    }
+
+    .voice-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .voice-btn:active {
+      transform: scale(0.98);
+    }
+
+    .voice-btn.recording {
+      background: var(--bad);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .voice-status {
+      margin-top: var(--s2);
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .voice-status.error {
+      color: var(--bad);
+    }
+
+    /* Category Tabs */
+    .category-tabs {
+      display: flex;
+      gap: var(--s2);
+      overflow-x: auto;
+      margin-bottom: var(--s3);
+      padding-bottom: var(--s2);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .category-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .category-tabs::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 2px;
+    }
+
+    .category-tab {
+      padding: 8px 16px;
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: var(--r2);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: var(--fb);
+    }
+
+    .category-tab:hover {
+      border-color: var(--brand);
+    }
+
+    .category-tab.active {
+      background: var(--brand);
+      color: var(--on-brand);
+      border-color: var(--brand);
+    }
+
+    /* Product Section */
+    .products-section {
+      margin-bottom: var(--s3);
+    }
+
+    .category-header {
+      font-family: var(--fh);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: var(--s4) 0 var(--s3);
+      padding-bottom: var(--s2);
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .category-header:first-child {
+      margin-top: 0;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--s3);
+    }
+
+    .product-card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: var(--r1);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 0 rgba(35,26,18,.1);
+    }
+
+    .product-card:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(23,97,63,0.15);
+    }
+
+    .product-card.out-of-stock {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .product-card.out-of-stock:hover {
+      transform: none;
+      border-color: var(--line);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: var(--r1);
+      margin-bottom: var(--s2);
+      background: var(--paper);
+    }
+
+    .product-image.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--line);
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .product-price {
+      font-family: var(--fh);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+
+    .product-stock {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge-bestseller {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* Cart Bar */
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--brand);
+      color: var(--on-brand);
+      padding: 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 100;
+    }
+
+    .cart-bar.show {
+      display: block;
+    }
+
+    .cart-bar-content {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--s3);
+    }
+
+    .cart-info {
+      flex: 1;
+    }
+
+    .cart-count {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .cart-total {
+      font-family: var(--fh);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .cart-btn {
+      padding: 12px 24px;
+      background: var(--on-brand);
+      color: var(--brand);
+      border: none;
+      border-radius: var(--r2);
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--fb);
+    }
+
+    .cart-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(35,26,18,0.6);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--paper);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: var(--r2) var(--r2) 0 0;
+      padding: var(--s4);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--s3);
+    }
+
+    .modal-title {
+      font-family: var(--fh);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--line);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--ink);
+    }
+
+    /* Cart Items */
+    .cart-item {
+      display: flex;
+      gap: var(--s3);
+      padding: var(--s3);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r1);
+      margin-bottom: var(--s2);
+    }
+
+    .cart-item-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--r1);
+      background: var(--paper);
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .cart-item-price {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .cart-item-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+    }
+
+    .cart-item-btn {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--brand);
+      background: transparent;
+      color: var(--brand);
+      border-radius: var(--r1);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cart-item-btn:hover {
+      background: var(--brand);
+      color: var(--on-brand);
+    }
+
+    .cart-item-qty {
+      font-weight: 700;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .cart-summary {
+      margin-top: var(--s4);
+      padding-top: var(--s3);
+      border-top: 2px solid var(--ink);
+    }
+
+    .cart-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--s2);
+      font-size: 18px;
+    }
+
+    .cart-summary-row.total {
+      font-family: var(--fh);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: var(--s3);
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: var(--s2);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--line);
+      border-radius: var(--r2);
+      font-size: 16px;
+      font-family: var(--fb);
+      background: var(--card);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--brand);
+      color: var(--on-brand);
+      border: none;
+      border-radius: var(--r2);
+      font-weight: 700;
+      font-size: 17px;
+      cursor: pointer;
+      font-family: var(--fb);
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Success/Waiting Screen */
+    .status-screen {
+      text-align: center;
+      padding: var(--s4);
+      display: none;
+    }
+
+    .status-screen.show {
+      display: block;
+    }
+
+    .status-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--s3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    .status-icon.success {
+      background: var(--ok-bg);
+      color: var(--brand);
+    }
+
+    .status-icon.waiting {
+      background: var(--accent);
+      color: var(--ink);
+    }
+
+    .status-title {
+      font-family: var(--fh);
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: var(--s2);
+    }
+
+    .order-number {
+      font-family: var(--fh);
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--brand);
+      margin: var(--s3) 0;
+    }
+
+    .status-message {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: var(--s4);
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: var(--s4);
+      color: var(--muted);
+    }
+
+    .spinner {
+      border: 3px solid var(--line);
+      border-top: 3px solid var(--brand);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto var(--s2);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--s4);
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: var(--s2);
+    }
+
+    @media (max-width: 600px) {
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+
+      .modal {
+        max-height: 95vh;
+      }
+
+      body {
+        padding-bottom: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1 id="toko-name">Loading...</h1>
+      <p id="toko-address"></p>
+    </div>
+
+    <!-- Search & Voice -->
+    <div class="search-section">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="searchInput" 
+          placeholder="Cari menu..."
+          autocomplete="off"
+        >
+        <span class="search-icon">🔍</span>
+      </div>
+      
+      <button class="voice-btn" id="voiceBtn">
+        🎤 Pesan dengan Suara
+      </button>
+      <div class="voice-status" id="voiceStatus"></div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs" id="categoryTabs"></div>
+
+    <!-- Products -->
+    <div class="products-section" id="productsSection">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Memuat menu...</p>
+      </div>
+    </div>
+
+    <!-- Cart Bar -->
+    <div class="cart-bar" id="cartBar">
+      <div class="cart-bar-content">
+        <div class="cart-info">
+          <div class="cart-count" id="cartCount">0 item</div>
+          <div class="cart-total" id="cartTotal">Rp 0</div>
+        </div>
+        <button class="cart-btn" id="viewCartBtn">
+          Lihat Keranjang →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Keranjang</h2>
+        <button class="modal-close" id="closeCartBtn">×</button>
+      </div>
+      <div id="cartItems"></div>
+      <div class="cart-summary">
+        <div class="cart-summary-row total">
+          <span>Total</span>
+          <span id="modalTotal">Rp 0</span>
+        </div>
+      </div>
+      <button class="btn-submit" id="checkoutBtn">
+        Lanjut ke Pembayaran
+      </button>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Informasi Pemesan</h2>
+        <button class="modal-close" id="closeCheckoutBtn">×</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama Anda</label>
+        <input type="text" class="form-input" id="customerName" placeholder="Masukkan nama Anda" required>
+      </div>
+      <button class="btn-submit" id="submitOrderBtn">
+        Kirim Pesanan
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Modal -->
+  <div class="modal-overlay" id="statusModal">
+    <div class="modal">
+      <div class="status-screen show" id="statusScreen"></div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let tokoId = null;
+    let products = [];
+    let cart = [];
+    let tokoInfo = {};
+    let categories = [];
+    let selectedCategory = 'all';
+    let searchQuery = '';
+    let currentOrderId = null;
+    let pollingInterval = null;
+
+    // Get toko_id from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    tokoId = urlParams.get('toko');
+
+    if (!tokoId) {
+      alert('Toko ID tidak ditemukan. Silakan scan QR code yang benar.');
+    } else {
+      loadMenu();
+    }
+
+    // Load menu from API
+    async function loadMenu() {
+      try {
+        const response = await fetch(`/api/menu?toko=${tokoId}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Gagal memuat menu');
+        }
+        
+        tokoInfo = data.toko;
+        products = data.produk;
+        
+        document.getElementById('toko-name').textContent = tokoInfo.nama;
+        document.getElementById('toko-address').textContent = tokoInfo.alamat || '';
+        
+        // Extract categories
+        extractCategories();
+        renderCategoryTabs();
+        renderProducts();
+      } catch (error) {
+        console.error('Error loading menu:', error);
+        document.getElementById('productsSection').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">❌</div>
+            <p><strong>Gagal memuat menu</strong></p>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Extract categories from products
+    function extractCategories() {
+      const catSet = new Set();
+      products.forEach(p => {
+        if (p.k) catSet.add(p.k);
+      });
+      categories = ['all', 'rekomendasi', 'terlaris', ...Array.from(catSet).sort()];
+    }
+
+    // Render category tabs
+    function renderCategoryTabs() {
+      const tabsHtml = categories.map(cat => {
+        let label = cat;
+        if (cat === 'all') label = 'Semua';
+        if (cat === 'rekomendasi') label = '⭐ Rekomendasi';
+        if (cat === 'terlaris') label = '🔥 Terlaris';
+        return `<button class="category-tab ${cat === selectedCategory ? 'active' : ''}" data-cat="${cat}">${label}</button>`;
+      }).join('');
+      
+      document.getElementById('categoryTabs').innerHTML = tabsHtml;
+      
+      // Event listeners
+      document.querySelectorAll('.category-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedCategory = btn.dataset.cat;
+          renderCategoryTabs();
+          renderProducts();
+        });
+      });
+    }
+
+    // Get bestsellers (products with most stock sold - simplified)
+    function getBestsellers() {
+      // Simplified: products with lower stock are "bestsellers"
+      return products
+        .filter(p => !p.v || p.v.length === 0)
+        .sort((a, b) => a.s - b.s)
+        .slice(0, 5)
+        .map(p => p.id);
+    }
+
+    // Render products
+    function renderProducts() {
+      const bestsellers = getBestsellers();
+      let filtered = products.filter(p => {
+        // Search filter
+        if (searchQuery && !p.n.toLowerCase().includes(searchQuery.toLowerCase())) {
+          return false;
+        }
+        
+        // Category filter
+        if (selectedCategory === 'all') return true;
+        if (selectedCategory === 'rekomendasi') {
+          // Show products with variants or high stock
+          return (p.v && p.v.length > 0) || p.s > 10;
+        }
+        if (selectedCategory === 'terlaris') {
+          return bestsellers.includes(p.id);
+        }
+        return p.k === selectedCategory;
+      });
+
+      if (filtered.length === 0) {
+        document.getElementById('productsSection').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p><strong>Produk tidak ditemukan</strong></p>
+            <p>Coba kata kunci lain</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by category for display
+      let html = '';
+      
+      if (selectedCategory === 'all') {
+        // Show by category
+        const grouped = {};
+        filtered.forEach(p => {
+          const cat = p.k || 'Lainnya';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(p);
+        });
+        
+        // Show Rekomendasi first
+        html += renderCategorySection('⭐ Rekomendasi', filtered.filter(p => (p.v && p.v.length > 0) || p.s > 10).slice(0, 6), bestsellers);
+        
+        // Show Terlaris
+        html += renderCategorySection('🔥 Terlaris', filtered.filter(p => bestsellers.includes(p.id)), bestsellers);
+        
+        // Show other categories
+        Object.keys(grouped).sort().forEach(cat => {
+          html += renderCategorySection(cat, grouped[cat], bestsellers);
+        });
+      } else {
+        html = renderCategorySection(selectedCategory === 'rekomendasi' ? '⭐ Rekomendasi' : selectedCategory === 'terlaris' ? '🔥 Terlaris' : selectedCategory, filtered, bestsellers);
+      }
+      
+      document.getElementById('productsSection').innerHTML = html;
+    }
+
+    function renderCategorySection(categoryName, products, bestsellers) {
+      if (products.length === 0) return '';
+      
+      const cardsHtml = products.map(product => renderProductCard(product, bestsellers)).join('');
+      
+      return `
+        <div class="category-header">${categoryName}</div>
+        <div class="product-grid">${cardsHtml}</div>
+      `;
+    }
+
+    function renderProductCard(product, bestsellers = []) {
+      const isBestseller = bestsellers.includes(product.id);
+      const hasVariants = product.v && product.v.length > 0;
+      
+      let stock, price, displayName;
+      
+      if (hasVariants) {
+        stock = product.v.reduce((sum, v) => sum + v.s, 0);
+        price = Math.min(...product.v.map(v => v.p));
+        displayName = product.n;
+      } else {
+        stock = product.s;
+        price = product.p;
+        displayName = product.n;
+      }
+      
+      const outOfStock = stock === 0;
+      const imageUrl = product.f || product.i || '';
+      
+      return `
+        <div class="product-card ${outOfStock ? 'out-of-stock' : ''}" data-product='${JSON.stringify(product).replace(/'/g, "&#39;")}' onclick="addToCart(this)">
+          ${isBestseller ? '<span class="badge-bestseller">TERLARIS</span>' : ''}
+          ${imageUrl ? 
+            `<img src="${imageUrl}" alt="${displayName}" class="product-image">` :
+            `<div class="product-image placeholder">🍽️</div>`
+          }
+          <div class="product-name">${displayName}</div>
+          <div class="product-price">${hasVariants ? 'Mulai ' : ''}Rp ${price.toLocaleString('id-ID')}</div>
+          <div class="product-stock">${outOfStock ? 'Habis' : `Stok: ${stock}`}</div>
+        </div>
+      `;
+    }
+
+    // Add to cart
+    function addToCart(element) {
+      const product = JSON.parse(element.dataset.product);
+      
+      if (product.v && product.v.length > 0) {
+        // Show variant selector
+        showVariantSelector(product);
+        return;
+      }
+      
+      if (product.s === 0) return;
+      
+      const existingItem = cart.find(item => item.id === product.id && item.variant_index === undefined);
+      
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.n,
+          price: product.p,
+          cost: product.c || 0,
+          quantity: 1,
+          image: product.f || product.i || '',
+          variant_index: undefined
+        });
+      }
+      
+      updateCartUI();
+    }
+
+    // Show variant selector (simplified - select first available variant)
+    function showVariantSelector(product) {
+      const availableVariant = product.v.find(v => v.s > 0);
+      if (!availableVariant) {
+        alert('Semua varian habis');
+        return;
+      }
+      
+      const variantIndex = product.v.indexOf(availableVariant);
+      const existingItem = cart.find(item => item.id === product.id && item.variant_index === variantIndex);
+      
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        cart.push({
+          id: product.id,
+          name: `${product.n} (${availableVariant.n})`,
+          price: availableVariant.p,
+          cost: product.c || 0,
+          quantity: 1,
+          image: product.f || product.i || '',
+          variant_index: variantIndex
+        });
+      }
+      
+      updateCartUI();
+    }
+
+    // Update cart UI
+    function updateCartUI() {
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      document.getElementById('cartCount').textContent = `${totalItems} item`;
+      document.getElementById('cartTotal').textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+      document.getElementById('modalTotal').textContent = `Rp ${totalPrice.toLocaleString('id-ID')}`;
+      
+      if (cart.length > 0) {
+        document.getElementById('cartBar').classList.add('show');
+      } else {
+        document.getElementById('cartBar').classList.remove('show');
+      }
+    }
+
+    // View cart
+    document.getElementById('viewCartBtn').addEventListener('click', () => {
+      renderCartItems();
+      document.getElementById('cartModal').classList.add('show');
+    });
+
+    document.getElementById('closeCartBtn').addEventListener('click', () => {
+      document.getElementById('cartModal').classList.remove('show');
+    });
+
+    function renderCartItems() {
+      if (cart.length === 0) {
+        document.getElementById('cartItems').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🛒</div>
+            <p>Keranjang kosong</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = cart.map((item, index) => `
+        <div class="cart-item">
+          ${item.image ? 
+            `<img src="${item.image}" alt="${item.name}" class="cart-item-image">` :
+            `<div class="cart-item-image" style="display:flex;align-items:center;justify-content:center;font-size:24px;">🍽️</div>`
+          }
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">Rp ${item.price.toLocaleString('id-ID')} × ${item.quantity}</div>
+          </div>
+          <div class="cart-item-controls">
+            <button class="cart-item-btn" onclick="decreaseQty(${index})">−</button>
+            <span class="cart-item-qty">${item.quantity}</span>
+            <button class="cart-item-btn" onclick="increaseQty(${index})">+</button>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('cartItems').innerHTML = html;
+    }
+
+    function increaseQty(index) {
+      cart[index].quantity++;
+      updateCartUI();
+      renderCartItems();
+    }
+
+    function decreaseQty(index) {
+      cart[index].quantity--;
+      if (cart[index].quantity === 0) {
+        cart.splice(index, 1);
+      }
+      updateCartUI();
+      renderCartItems();
+    }
+
+    // Checkout
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+      document.getElementById('cartModal').classList.remove('show');
+      document.getElementById('checkoutModal').classList.add('show');
+      document.getElementById('customerName').focus();
+    });
+
+    document.getElementById('closeCheckoutBtn').addEventListener('click', () => {
+      document.getElementById('checkoutModal').classList.remove('show');
+    });
+
+    // Submit order
+    document.getElementById('submitOrderBtn').addEventListener('click', async () => {
+      const customerName = document.getElementById('customerName').value.trim();
+      
+      if (!customerName) {
+        alert('Mohon masukkan nama Anda');
+        return;
+      }
+      
+      if (cart.length === 0) {
+        alert('Keranjang kosong');
+        return;
+      }
+      
+      try {
+        document.getElementById('submitOrderBtn').disabled = true;
+        document.getElementById('submitOrderBtn').textContent = 'Mengirim...';
+        
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toko_id: tokoId,
+            customer_name: customerName,
+            items: cart
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Gagal menyimpan pesanan');
+        }
+        
+        currentOrderId = data.order.order_id;
+        
+        // Close checkout modal
+        document.getElementById('checkoutModal').classList.remove('show');
+        
+        // Show waiting screen
+        showWaitingScreen(data.order.order_number);
+        
+        // Start polling for payment completion
+        startPaymentPolling();
+        
+        // Reset cart
+        cart = [];
+        updateCartUI();
+        document.getElementById('customerName').value = '';
+        
+      } catch (error) {
+        console.error('Error submitting order:', error);
+        alert('Gagal menyimpan pesanan: ' + error.message);
+      } finally {
+        document.getElementById('submitOrderBtn').disabled = false;
+        document.getElementById('submitOrderBtn').textContent = 'Kirim Pesanan';
+      }
+    });
+
+    // Show waiting screen
+    function showWaitingScreen(orderNumber) {
+      document.getElementById('statusScreen').innerHTML = `
+        <div class="status-icon waiting">⏳</div>
+        <div class="status-title">Pesanan Dikirim!</div>
+        <div class="order-number">#${orderNumber}</div>
+        <div class="status-message">
+          Silahkan tunjukkan nomor pesanan ini ke kasir untuk proses pembayaran.<br><br>
+          <strong>Menunggu pembayaran...</strong>
+        </div>
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Sistem akan otomatis update setelah kasir selesai memproses</p>
+        </div>
+      `;
+      document.getElementById('statusModal').classList.add('show');
+    }
+
+    // Start polling for payment completion
+    function startPaymentPolling() {
+      if (pollingInterval) clearInterval(pollingInterval);
+      
+      console.log('[Polling] Starting payment status polling for order:', currentOrderId);
+      
+      pollingInterval = setInterval(async () => {
+        try {
+          // Check order status via toko_id - add cache buster
+          const cacheBuster = Date.now();
+          const response = await fetch(`/api/orders/${currentOrderId}?toko_id=${tokoId}&_=${cacheBuster}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          const data = await response.json();
+          
+          console.log('[Polling] Order status:', data.order?.status, '| Payment:', data.order?.payment_method);
+          
+          if (data.success && data.order.status === 'paid') {
+            console.log('[Polling] Payment detected! Showing success screen...');
+            clearInterval(pollingInterval);
+            showSuccessScreen(data.order);
+          }
+        } catch (error) {
+          console.error('[Polling] Error:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+    }
+
+    // Show success screen with receipt
+    function showSuccessScreen(order) {
+      // Format receipt
+      const itemsHtml = order.items.map(item => 
+        `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line)">
+          <span>${item.name} ×${item.quantity}</span>
+          <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+        </div>`
+      ).join('');
+      
+      const paymentMethod = order.payment_method === 'qris' ? 'QRIS/Non-Tunai' : 'Tunai';
+      
+      document.getElementById('statusScreen').innerHTML = `
+        <div class="status-icon success">✓</div>
+        <div class="status-title">Pembayaran Selesai!</div>
+        <div class="order-number">#${order.order_number}</div>
+        <div class="status-message">
+          <strong>Metode Pembayaran: ${paymentMethod}</strong><br>
+          Terima kasih sudah memesan di ${tokoInfo.nama}! 🙏
+        </div>
+        
+        <div style="background:var(--card);padding:var(--s3);border-radius:var(--r1);border:1px solid var(--line);margin:var(--s3) 0;text-align:left">
+          <div style="font-weight:700;margin-bottom:var(--s2);text-align:center;border-bottom:2px solid var(--ink);padding-bottom:var(--s2)">
+            LIST BELANJA
+          </div>
+          ${itemsHtml}
+          <div style="display:flex;justify-content:space-between;padding:var(--s2) 0;margin-top:var(--s2);border-top:2px solid var(--ink);font-weight:700;font-size:18px">
+            <span>TOTAL</span>
+            <span>Rp ${order.subtotal.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+        
+        <button class="btn-submit" onclick="window.location.reload()">
+          Pesan Lagi
+        </button>
+      `;
+    }
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderProducts();
+    });
+
+    // ===== VOICE ORDER =====
+    let isRecording = false;
+    let recognition = null;
+
+    document.getElementById('voiceBtn').addEventListener('click', toggleVoiceRecording);
+
+    async function toggleVoiceRecording() {
+      // Check browser support for Web Speech API
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        document.getElementById('voiceStatus').textContent = '❌ Browser Anda tidak mendukung Speech Recognition';
+        document.getElementById('voiceStatus').classList.add('error');
+        return;
+      }
+      
+      if (isRecording) {
+        // Stop recognition
+        if (recognition) {
+          recognition.stop();
+        }
+        return;
+      }
+      
+      startRecording();
+    }
+
+    async function startRecording() {
+      try {
+        isRecording = true;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'id-ID'; // Bahasa Indonesia
+        recognition.continuous = false; // Stop after one result
+        recognition.interimResults = false; // Only final results
+        recognition.maxAlternatives = 1;
+        
+        document.getElementById('voiceBtn').classList.add('recording');
+        document.getElementById('voiceBtn').textContent = '⏹️ Stop Rekaman';
+        document.getElementById('voiceStatus').textContent = '🎙️ Berbicara... (contoh: "ayam goreng 2 dan es teh 1")';
+        document.getElementById('voiceStatus').classList.remove('error');
+        
+        recognition.onresult = event => {
+          const transcript = event.results[0][0].transcript;
+          console.log('[Voice] Transcription:', transcript);
+          
+          document.getElementById('voiceStatus').textContent = `Anda bilang: "${transcript}" - Memproses...`;
+          
+          // Process the transcription
+          processVoiceTranscription(transcript);
+        };
+        
+        recognition.onerror = event => {
+          console.error('[Voice] Recognition error:', event.error);
+          isRecording = false;
+          document.getElementById('voiceBtn').classList.remove('recording');
+          document.getElementById('voiceBtn').textContent = '🎤 Pesan dengan Suara';
+          
+          let errorMsg = 'Gagal mengenali suara.';
+          if (event.error === 'no-speech') {
+            errorMsg = 'Tidak ada suara terdeteksi. Coba lagi.';
+          } else if (event.error === 'audio-capture') {
+            errorMsg = 'Mikrofon tidak dapat diakses.';
+          } else if (event.error === 'not-allowed') {
+            errorMsg = 'Izin mikrofon ditolak. Aktifkan di pengaturan browser.';
+          }
+          
+          document.getElementById('voiceStatus').textContent = '❌ ' + errorMsg;
+          document.getElementById('voiceStatus').classList.add('error');
+        };
+        
+        recognition.onend = () => {
+          isRecording = false;
+          document.getElementById('voiceBtn').classList.remove('recording');
+          document.getElementById('voiceBtn').textContent = '🎤 Pesan dengan Suara';
+        };
+        
+        recognition.start();
+        
+      } catch (error) {
+        console.error('Voice recognition error:', error);
+        document.getElementById('voiceStatus').textContent = '❌ Gagal memulai pengenalan suara';
+        document.getElementById('voiceStatus').classList.add('error');
+        isRecording = false;
+        document.getElementById('voiceBtn').classList.remove('recording');
+        document.getElementById('voiceBtn').textContent = '🎤 Pesan dengan Suara';
+      }
+    }
+
+    async function processVoiceTranscription(transcript) {
+      try {
+        // Build product list for backend
+        const productList = [];
+        products.forEach(p => {
+          if (p.v && p.v.length > 0) {
+            p.v.forEach((v, vi) => {
+              if (v.s > 0) {
+                productList.push({
+                  id: p.id,
+                  name: `${p.n} (${v.n})`,
+                  price: v.p,
+                  stock: v.s,
+                  variant_index: vi
+                });
+              }
+            });
+          } else if (p.s > 0) {
+            productList.push({
+              id: p.id,
+              name: p.n,
+              price: p.p,
+              stock: p.s,
+              variant_index: null
+            });
+          }
+        });
+        
+        // Send to backend for AI parsing
+        const response = await fetch('/api/voice-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: 'customer_' + tokoId,
+            transcription: transcript,
+            products: productList
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Gagal memproses suara');
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Gagal memproses pesanan suara');
+        }
+        
+        // Add items to cart
+        if (result.items && result.items.length > 0) {
+          let addedCount = 0;
+          
+          result.items.forEach(orderItem => {
+            // Find matching product from productList
+            const matchedProduct = productList.find(p =>
+              p.name.toLowerCase().includes(orderItem.product_name.toLowerCase()) ||
+              orderItem.product_name.toLowerCase().includes(p.name.toLowerCase())
+            );
+            
+            if (matchedProduct) {
+              // Check if already in cart
+              const existingItem = cart.find(item => 
+                item.id === matchedProduct.id && 
+                item.variant_index === matchedProduct.variant_index
+              );
+              
+              if (existingItem) {
+                existingItem.quantity += orderItem.quantity;
+              } else {
+                // Get full product data
+                const fullProduct = products.find(p => p.id === matchedProduct.id);
+                cart.push({
+                  id: matchedProduct.id,
+                  name: matchedProduct.name,
+                  price: matchedProduct.price,
+                  cost: fullProduct?.c || 0,
+                  quantity: orderItem.quantity,
+                  image: fullProduct?.f || fullProduct?.i || '',
+                  variant_index: matchedProduct.variant_index
+                });
+              }
+              addedCount++;
+            }
+          });
+          
+          updateCartUI();
+          document.getElementById('voiceStatus').textContent = `✅ ${addedCount} produk ditambahkan ke keranjang!`;
+          document.getElementById('voiceStatus').classList.remove('error');
+          
+          // Show cart after 1 second
+          setTimeout(() => {
+            document.getElementById('viewCartBtn').click();
+          }, 1000);
+          
+        } else {
+          throw new Error('Tidak ada produk yang dikenali dari pesanan Anda');
+        }
+        
+      } catch (error) {
+        console.error('Error processing voice:', error);
+        document.getElementById('voiceStatus').textContent = '❌ ' + error.message;
+        document.getElementById('voiceStatus').classList.add('error');
+      }
+      
+      // Reset status after 5s
+      setTimeout(() => {
+        if (!document.getElementById('voiceStatus').classList.contains('error')) {
+          document.getElementById('voiceStatus').textContent = '';
+        }
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
