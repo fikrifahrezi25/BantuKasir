@@ -1135,7 +1135,8 @@ function hitung(days){
       });
     }
   });
-  const k=EXP*days;
+  // Biaya operasional tidak dihitung otomatis (bisa ditambahkan sebagai fitur opsional nanti)
+  const k=0;
   return{m,c,k,u:m-c-k,per:Object.values(per).sort((a,b)=>b.u-a.u),totalDiskon,totalPPN};
 }
 function getBestSellers(days=7){const sold={};S.sales.forEach(s=>{if(!s.void&&DAY-s.day<days)s.items.forEach(i=>{sold[i.id]=(sold[i.id]||0)+i.q})});const sorted=Object.entries(sold).sort((a,b)=>b[1]-a[1]);const threshold=sorted.length>0?sorted[0][1]*0.5:0;return sorted.filter(([id,qty])=>qty>=threshold&&qty>=3).map(([id])=>+id)}
@@ -1151,7 +1152,7 @@ function hari(o){
       s.items.forEach(i=>{c+=i.c*i.q});
     }
   });
-  return m-c-EXP;
+  return m-c;
 }
 function subtotal(){
   return Object.entries(S.cart).reduce((t,[key,val])=>{
@@ -1460,7 +1461,7 @@ return `<section class="hero-u"><span class="lead">Untung hari ini</span><span c
 <div class="row2"><div><span class="lead">Uang masuk</span><span class="num">${jt(t.m)}</span></div><div><span class="lead">Uang keluar</span><span class="num">${jt(t.c+t.k)}</span><small style="color:var(--muted)">modal + pengeluaran</small></div></div>
 <div id="insight-card"></div>
 ${bannerStok}
-<h2 class="sec">Paling untung hari ini</h2>
+<div class="row2"><div><span class="lead">Uang masuk</span><span class="num">${jt(t.m)}</span></div><div><span class="lead">Uang keluar</span><span class="num">${jt(t.c)}</span><small style="color:var(--muted)">modal barang terjual</small></div></div>
 ${t.per.length?`<ul class="list">${t.per.slice(0,3).map(r=>`<li><span>${esc(r.n)}<span class="sub">${r.q} terjual</span></span><span class="num pos">+${jt(r.u)}</span></li>`).join('')}</ul>`:`<div class="empty">${ic('cart')}<b>Belum ada jualan hari ini.</b>Ketuk Mulai Jualan untuk mencatat yang pertama.</div>`}
 <button class="btn btn--p bigbtn" data-act="go" data-v="kasir">${ic('cart')}Mulai Jualan</button>`},
 kasir(){const ps=S.prod.filter(p=>(S.kat==='Semua'||p.k===S.kat)&&p.n.toLowerCase().includes(S.q.toLowerCase()));const bestSellers=getBestSellers(7);const sorted=ps.sort((a,b)=>{const aIsBest=bestSellers.includes(a.id);const bIsBest=bestSellers.includes(b.id);if(aIsBest&&!bIsBest)return -1;if(!aIsBest&&bIsBest)return 1;return 0});
